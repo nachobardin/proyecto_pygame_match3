@@ -1,0 +1,9 @@
+import pygame
+
+BLANCO = (255,255,255)
+VERDE = (0,255,0)
+ROJO = (255,0,0)
+GRIS = (128, 128, 128)
+AMARILLO = (255, 255, 0)
+CELESTE = ( 0, 0,128)
+AZUL = ( 0, 0, 255)
