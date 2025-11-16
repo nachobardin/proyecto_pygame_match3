@@ -12,10 +12,11 @@ pygame.display.set_caption("JuegoPY")
 corriendo = True
 
 while corriendo:
-    for evento in pygame.event.get():
+    eventos = pygame.event.get()
+
+    for evento in eventos:
         if evento.type == pygame.QUIT: # Interaccion con la cruz de la ventana
-            pygame.quit() # Cerramos la ventana de pygame
-            quit()
+            corriendo = False
     
     pantalla.fill(GRIS)
 
