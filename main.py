@@ -1,6 +1,7 @@
 import pygame
 from colores import *
 from constantes import *
+from funciones import *
 
 pygame.init()
 
@@ -9,7 +10,15 @@ color_fondo = GRIS
 
 pygame.display.set_caption("JuegoPY")
 
+#          BANDERAS   
+pantalla_actual = "menu"
 corriendo = True
+
+#          BOTONES
+botones = calcular_botones(ANCHO, ALTO)
+
+
+
 
 while corriendo:
     eventos = pygame.event.get()
