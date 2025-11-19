@@ -30,3 +30,65 @@ def dibujar_matriz(matriz:list[list], pantalla:pygame.Surface)->None:
     for i in range(len(matriz)):
         for j in range(len(matriz[i])):
             pygame.draw.rect(pantalla, matriz[i][j]["color"], matriz[i][j]["rect"])
+
+def son_vecinos(a: tuple, b: tuple) -> bool:
+#Devuelve True si las dos posiciones son adyacentes (arriba/abajo/izquierda/derecha)."""
+    r1, c1 = a
+    r2, c2 = b
+    return (abs(r1 - r2) == 1 and c1 == c2) or (abs(c1 - c2) == 1 and r1 == r2)
+
+
+def intercambiar(matriz: list[list], a: tuple, b: tuple) -> None:
+    #Intercambia dos fichas de la matriz."""
+    r1, c1 = a
+    r2, c2 = b
+    matriz[r1][c1]["color"], matriz[r2][c2]["color"] = matriz[r2][c2]["color"], matriz[r1][c1]["color"]
+
+
+def buscar_matches(matriz: list[list]) -> set:
+    """
+    Busca coincidencias de 3 o más en filas y columnas.
+    Devuelve un set con todas las posiciones que forman parte del match.
+    """
+    filas = len(matriz)
+    columnas = len(matriz[0])
+    celdas_en_match = set()
+
+    # --- Buscar en filas ---
+    for i in range(filas):
+        contador = 1
+        for j in range(1, columnas):
+            if matriz[i][j]["color"] == matriz[i][j - 1]["color"]:
+                contador += 1
+            else:
+                if contador >= 3:
+                    for k in range(j - contador, j):
+                        celdas_en_match.add((i, k))
+                contador = 1
+
+        if contador >= 3:
+            for k in range(columnas - contador, columnas):
+                celdas_en_match.add((i, k))
+
+    # --- Buscar en columnas ---
+    for j in range(columnas):
+        contador = 1
+        for i in range(1, filas):
+            if matriz[i][j]["color"] == matriz[i - 1][j]["color"]:
+                contador += 1
+            else:
+                if contador >= 3:
+                    for k in range(i - contador, i):
+                        celdas_en_match.add((k, j))
+                contador = 1
+
+        if contador >= 3:
+            for k in range(filas - contador, filas):
+                celdas_en_match.add((k, j))
+
+    return celdas_en_match
+
+
+def hay_match(matriz: list[list]) -> bool:
+    """Devuelve True si existe un match de 3 o más en el tablero."""
+    return len(buscar_matches(matriz)) > 0
