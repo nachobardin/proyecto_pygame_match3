@@ -92,3 +92,15 @@ def buscar_matches(matriz: list[list]) -> set:
 def hay_match(matriz: list[list]) -> bool:
     """Devuelve True si existe un match de 3 o más en el tablero."""
     return len(buscar_matches(matriz)) > 0
+
+
+# def mostrar_timer(screen, start_time, font, pos=(10, 10), color=(255, 255, 255)):
+#     elapsed_time = (pygame.time.get_ticks() - start_time) // 1000  # segundos
+#     timer_text = font.render(f"Tiempo: {elapsed_time}s", True, color)
+#     screen.blit(timer_text, pos)
+
+
+def mostrar_timer_regresivo(screen, start_time, font, tiempo_total=60, pos=(10, 10), color=(255, 255, 255)):
+    lapso_tiempo = (pygame.time.get_ticks() - start_time) // 1000
+    tiempo_restante = max(0, tiempo_total - lapso_tiempo)
+    return tiempo_restante
