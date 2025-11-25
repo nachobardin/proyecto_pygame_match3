@@ -2,6 +2,8 @@ import pygame
 from random import *
 
 def inicializar_matriz(cant_filas:int, cant_columnas:int, valor_inicial:any=None)->list[list]:
+    """
+    """
     matriz = []
     for _ in range(cant_filas):
         fila = []
@@ -10,26 +12,59 @@ def inicializar_matriz(cant_filas:int, cant_columnas:int, valor_inicial:any=None
         matriz.append(fila)
     return matriz
 
-def cargar_matriz_aleatoria(matriz: list[list], lista_color:list[tuple])->None:
-    for i in range(len(matriz)):
-        for j in range(len(matriz[i])):
-            matriz[i][j] = {"color":lista_color[randint(0, 5)]} # 0 - 5
+def cargar_matriz_elementos(matriz: list[list], elementos: dict) -> None:
+    """
+    Rellena la matriz, asignando en cada celda un diccionario con la imagen y el puntaje
+    de un caramelo aleatorio, usando los tipos definidos en 'elementos' (sin comodín).
+    La imagen se carga ahora (de la ruta correspondiente); el rect se asigna después.
+    """
+    tipos = list(elementos.keys())  # Lista de tipos de caramelos disponibles
+    for i in range(len(matriz)):           # Recorre cada fila
+        for j in range(len(matriz[i])):    # Recorre cada columna dentro de la fila
+            tipo = choice(tipos)           # Sortea el tipo para esta celda
+            datos = elementos[tipo]        # Saca puntaje y ruta de imagen
+            matriz[i][j] = {
+                "puntaje": datos["puntaje"],                # Puntaje del caramelo sorteado
+                "img": pygame.image.load(datos["ruta"])      # Imagen cargada, se escala después
+            }
 
 
-def crear_botones_matriz(matriz:list[list], rect_cont:pygame.Rect)->None:
-    ancho_celda_matriz = int(rect_cont.width * 0.96 / len(matriz[0])) # Ancho pantalla / cant_columnas
-    alto_celda_matriz = int(rect_cont.height * 0.96 / len(matriz)) # Alto pantalla / cant_filas
-    mitad_ancho_rect_cont = int(rect_cont.width * 0.02) + rect_cont.x
-    mitad_alto_rect_cont = int(rect_cont.height * 0.02) + rect_cont.y
-    for i in range(len(matriz)):
-        for j in range(len(matriz[i])):
-            un_rectangulo = pygame.Rect((j * ancho_celda_matriz) + mitad_ancho_rect_cont, (i * alto_celda_matriz) + mitad_alto_rect_cont, ancho_celda_matriz, alto_celda_matriz)
-            matriz[i][j].update({"rect": un_rectangulo})
 
-def dibujar_matriz(matriz:list[list], pantalla:pygame.Surface)->None:
+def crear_botones_matriz_sobre_contenedor(matriz: list[list], rect_cont: pygame.Rect) -> None:
+    """
+    Asigna el campo "rect" a cada celda de la matriz, 
+    calculando posición y tamaño para distribuir los caramelos dentro del área del tablero (`rect_cont`).
+    Si cambia la resolución o el tamaño del tablero, hay que volver a llamar a esta función.
+    """
+    # Calcula ancho y alto para cada celda, dejando pequeños márgenes (4%)
+    ancho_celda_matriz = int(rect_cont.width * 0.96 / len(matriz[0]))  # El 96% del ancho dividido "columnas"
+    alto_celda_matriz  = int(rect_cont.height * 0.96 / len(matriz))    # El 96% del alto dividido "filas"
+    # Offset para márgenes en el área del tablero ("dejamos 2% de marco arriba/izq")
+    offset_x = int(rect_cont.width * 0.02) + rect_cont.x
+    offset_y = int(rect_cont.height * 0.02) + rect_cont.y
+
+    for i in range(len(matriz)):           # Para cada fila
+        for j in range(len(matriz[i])):    # Para cada columna
+            # Calcula el rectángulo donde se dibuja ese caramelo
+            un_rectangulo = pygame.Rect(
+                (j * ancho_celda_matriz) + offset_x,       # Posición x
+                (i * alto_celda_matriz)  + offset_y,       # Posición y
+                ancho_celda_matriz,                        # Ancho
+                alto_celda_matriz                          # Alto
+            )
+            # Le agrega/actualiza el campo "rect" a la celda de la matriz
+            matriz[i][j]["rect"] = un_rectangulo
+
+
+def dibujar_matriz(matriz: list[list], pantalla: pygame.Surface) -> None:
     for i in range(len(matriz)):
         for j in range(len(matriz[i])):
-            pygame.draw.rect(pantalla, matriz[i][j]["color"], matriz[i][j]["rect"])
+            # Escala la imagen al tamaño del rect; así respeta el layout adaptable
+            img_escalada = pygame.transform.scale(
+                matriz[i][j]["img"], 
+                (matriz[i][j]["rect"].width, matriz[i][j]["rect"].height)
+            )
+            pantalla.blit(img_escalada, matriz[i][j]["rect"])
 
 def son_vecinos(a: tuple, b: tuple) -> bool:
 #Devuelve True si las dos posiciones son adyacentes (arriba/abajo/izquierda/derecha)."""
@@ -104,3 +139,113 @@ def mostrar_timer_regresivo(screen, start_time, font, tiempo_total=60, pos=(10, 
     lapso_tiempo = (pygame.time.get_ticks() - start_time) // 1000
     tiempo_restante = max(0, tiempo_total - lapso_tiempo)
     return tiempo_restante
+
+
+def cambiar_resolucion(i, resoluciones):
+    if i + 1 < len(resoluciones):
+        nuevo_indice = i + 1
+    else:
+        nuevo_indice = 0
+    nueva_resolucion = resoluciones[nuevo_indice]
+    pantalla = pygame.display.set_mode(nueva_resolucion)
+    return pantalla, nuevo_indice
+
+
+def imagen_boton_escalada(ruta_img, rect):
+    """
+    """
+    img = pygame.image.load(ruta_img)
+    return pygame.transform.scale(img, (rect.width, rect.height))
+
+def escalar_fondo(ruta, tamanio):
+    """
+    PROPOSITO: Carga una imagen de fondo y la escala al tamaño actual de la pantalla.
+    """
+    return pygame.transform.scale(pygame.image.load(ruta), tamanio)
+
+def colocar_img_boton(ruta_img, ancho, alto):
+    """
+    PROPOSITO: Carga la imagen del botón desde archivo y la escala al tamaño recibido.
+    """
+    img = pygame.image.load(ruta_img)
+    return pygame.transform.scale(img, (int(ancho), int(alto)))
+
+
+
+def generar_tablero_valido_match_3(filas:int, columnas:int, elementos:dict, rect_cont) -> list[list]:
+    """
+    Sigue creando matrices aleatorias hasta que salga una que es válida.
+    """
+    while True:
+        matriz = inicializar_matriz(filas, columnas, rect_cont)
+        cargar_matriz_elementos(matriz, elementos)
+        crear_botones_matriz_sobre_contenedor(matriz, rect_cont)
+        if matriz_es_valida(matriz):
+            return matriz
+        
+def hay_match_resuelto(matriz: list[list]) -> bool:
+    """
+    Devuelve True si HAY algún grupo de 3 o más elementos iguales en fila o columna.
+    Se usa en la inicialización para rechazar matrices con combos ya hechos.
+    """
+    filas = len(matriz)
+    columnas = len(matriz[0])
+
+    # Chequeo filas
+    for i in range(filas):
+        for j in range(columnas - 2):  # Solo hasta la antepenúltima
+            tipo1 = matriz[i][j].get("img")
+            tipo2 = matriz[i][j+1].get("img")
+            tipo3 = matriz[i][j+2].get("img")
+            if tipo1 == tipo2 and tipo2 == tipo3:
+                return True
+
+    # Chequeo columnas
+    for j in range(columnas):
+        for i in range(filas - 2):  # Solo hasta la antepenúltima
+            tipo1 = matriz[i][j].get("img")
+            tipo2 = matriz[i+1][j].get("img")
+            tipo3 = matriz[i+2][j].get("img")
+            if tipo1 == tipo2 and tipo2 == tipo3:
+                return True
+
+    return False
+
+
+def hay_jugada_posible(matriz: list[list]) -> bool:
+    """
+    Devuelve True si existe algún swap entre dos adyacentes que forme un combo al hacerlo.
+    Así se garantiza que el tablero SIEMPRE tiene jugadas y no está bloqueado.
+    """
+    filas = len(matriz)
+    columnas = len(matriz[0])
+
+    for i in range(filas):
+        for j in range(columnas):
+            # Check hacia la derecha (swap horizontal)
+            if j < columnas - 1:
+                matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # swap temporal
+                if hay_match_resuelto(matriz):
+                    matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
+                    return True
+                matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
+
+            # Check hacia abajo (swap vertical)
+            if i < filas - 1:
+                matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # swap temporal
+                if hay_match_resuelto(matriz):
+                    matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
+                    return True
+                matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
+
+    return False
+
+def matriz_es_valida(matriz: list[list]) -> bool:
+    # No debe tener match hecho y debe tener jugada posible
+    if hay_match_resuelto(matriz):
+        return False
+    if not hay_jugada_posible(matriz):
+        return False
+    return True
+
+

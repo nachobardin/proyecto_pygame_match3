@@ -7,8 +7,12 @@ from modulos.funciones import *
 # Inicialización y ventana
 pygame.init()
 pygame.display.set_icon(LOGO)
-pantalla = pygame.display.set_mode(RESOLUCION_2)
 pygame.display.set_caption(TITULO_JUEGO)
+
+# RESOLUCION
+indice_resolucion = 0
+
+pantalla = pygame.display.set_mode(RESOLUCIONES[0])
 
 
 font = pygame.font.SysFont("arial", 30) # Fuente para el timer
@@ -38,9 +42,9 @@ rect_boton_resolucion = pygame.Rect(x_boton, y_boton_resolucion, ancho_boton, al
 rect_boton_salir = pygame.Rect(x_boton, y_boton_salir, ancho_boton, alto_boton)
 rect_boton_volver = pygame.Rect(x_boton, y_boton_salir, ancho_boton, alto_boton)
 # Textos botones
-def colocar_img_boton(ruta_img, x=400, y=235):
+def colocar_img_boton(ruta_img, ancho=400, alto=235):
     boton = pygame.image.load(ruta_img)
-    boton = pygame.transform.scale(boton, (x, y))
+    boton = pygame.transform.scale(boton, (ancho, alto))
     return boton
 
 # (400, 235) tamaño original de los botones
@@ -49,8 +53,8 @@ img_btn_puntajes = colocar_img_boton(RUTA_PUNTAJES_BTN)
 img_btn_resolucion = colocar_img_boton(RUTA_RESOLUCION_BTN)
 img_btn_salir = colocar_img_boton(RUTA_SALIR_BTN)
 img_btn_volver = colocar_img_boton(RUTA_VOLVER_BTN)
-img_timer = colocar_img_boton(RUTA_TIMER_BTN, x=900, y=300)
-img_rectangulo = colocar_img_boton(RUTA_RECTANGULO, x=800, y=300)
+img_timer = colocar_img_boton(RUTA_TIMER_BTN, ancho=900, alto=300)
+img_rectangulo = colocar_img_boton(RUTA_RECTANGULO, ancho=800, alto=300)
 
 rect_texto_jugar = img_btn_jugar.get_rect(center=rect_boton_jugar.center)
 rect_texto_puntajes = img_btn_puntajes.get_rect(center=rect_boton_puntaje.center)
@@ -61,7 +65,7 @@ rect_texto_volver = img_btn_volver.get_rect(center=rect_boton_volver.center)
 rect_contenedor_y = int(pantalla.get_height() * 0.05)
 rect_contenedor_ancho = int(pantalla.get_width() * 0.60)
 rect_contenedor_alto = int(pantalla.get_height() * 0.90)
-rect_contenedor_x = int(pantalla.get_width() * 0.35)
+rect_contenedor_x = int(pantalla.get_width() * 0.30)
 rect_contenedor = pygame.Rect(rect_contenedor_x, rect_contenedor_y, rect_contenedor_ancho, rect_contenedor_alto)
 # Matriz (tablero)
 lista_color = [ROJO, AZUL, VERDE, AMARILLO, CELESTE, GRIS]
@@ -90,7 +94,9 @@ while corriendo:
                 elif rect_boton_puntaje.collidepoint(evento.pos):
                     pantalla_actual = "puntajes"
                 elif rect_boton_resolucion.collidepoint(evento.pos):
-                    pantalla_actual = "resolucion"
+                    indice_resolucion = (indice_resolucion + 1) % len(RESOLUCIONES)
+                    pantalla = pygame.display.set_mode(RESOLUCIONES[indice_resolucion])
+                    
                 elif rect_boton_salir.collidepoint(evento.pos):
                     corriendo = False
             elif pantalla_actual == "puntajes": # Pantalla puntajes
@@ -139,6 +145,7 @@ while corriendo:
                 nombre_usuario = nombre_usuario[:-1]
             elif len(nombre_usuario) < 10:
                 nombre_usuario += evento.unicode
+
     if pantalla_actual == "principal":
         pantalla.blit(FONDO_PANTALLA_PRINCIPAL, (0, 0))
         pygame.draw.rect(pantalla, COLOR_TEXTO_BOTON, rect_boton_jugar, border_radius=15)
@@ -149,6 +156,7 @@ while corriendo:
         pantalla.blit(img_btn_resolucion, rect_texto_resolucion)
         pygame.draw.rect(pantalla, COLOR_TEXTO_BOTON, rect_boton_salir, border_radius=15)
         pantalla.blit(img_btn_salir, rect_texto_salir)
+
     # PANTALLA PUNTAJES
     elif pantalla_actual == "puntajes":
         pantalla.blit(FONDO_PUNTAJES, (0, 0))
@@ -176,7 +184,7 @@ while corriendo:
     elif pantalla_actual == "juego":
         pantalla.blit(FONDO_JUEGO, (0, 0))
     
-        rect_boton_volver = pygame.Rect(20, y_boton_salir, ancho_boton + 30, alto_boton)
+        rect_boton_volver = pygame.Rect(20, y_boton_salir, ancho_boton, alto_boton)
         rect_texto_volver = img_btn_volver.get_rect(left=rect_boton_volver.left - 50, centery=rect_boton_volver.centery)
         pygame.draw.rect(pantalla, COLOR_TEXTO_BOTON, rect_boton_volver, border_radius=15)
         pantalla.blit(img_btn_volver, rect_texto_volver)
@@ -221,6 +229,6 @@ while corriendo:
         
         fuente_input = pygame.font.SysFont("arial", 40)
         texto_input = fuente_input.render(nombre_usuario, True, (0, 0, 0))
-        pantalla.blit(texto_input, (input_box.x+10, input_box.y+10))
+        pantalla.blit(texto_input, (input_box.x + 10, input_box.y + 10))
     pygame.display.flip()
 pygame.quit()
