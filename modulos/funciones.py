@@ -12,21 +12,35 @@ def inicializar_matriz(cant_filas:int, cant_columnas:int, valor_inicial:any=None
         matriz.append(fila)
     return matriz
 
+# def cargar_matriz_elementos(matriz: list[list], elementos: dict) -> None:
+#     """
+#     Rellena la matriz, asignando en cada celda un diccionario con la imagen y el puntaje
+#     de un caramelo aleatorio, usando los tipos definidos en 'elementos' (sin comodín).
+#     La imagen se carga ahora (de la ruta correspondiente); el rect se asigna después.
+#     """
+#     tipos = list(elementos.keys())  # Lista de tipos de caramelos disponibles
+#     for i in range(len(matriz)):           # Recorre cada fila
+#         for j in range(len(matriz[i])):    # Recorre cada columna dentro de la fila
+#             tipo = choice(tipos)           # Sortea el tipo para esta celda
+#             datos = elementos[tipo]        # Saca puntaje y ruta de imagen
+#             matriz[i][j] = {
+#                 "puntos": datos["puntos"],                # Puntaje del caramelo sorteado
+#                 "img": pygame.image.load(datos["img"])      # Imagen cargada, se escala después
+#             }
+
+
 def cargar_matriz_elementos(matriz: list[list], elementos: dict) -> None:
-    """
-    Rellena la matriz, asignando en cada celda un diccionario con la imagen y el puntaje
-    de un caramelo aleatorio, usando los tipos definidos en 'elementos' (sin comodín).
-    La imagen se carga ahora (de la ruta correspondiente); el rect se asigna después.
-    """
-    tipos = list(elementos.keys())  # Lista de tipos de caramelos disponibles
-    for i in range(len(matriz)):           # Recorre cada fila
-        for j in range(len(matriz[i])):    # Recorre cada columna dentro de la fila
-            tipo = choice(tipos)           # Sortea el tipo para esta celda
-            datos = elementos[tipo]        # Saca puntaje y ruta de imagen
+    tipos = list(elementos.keys()) # Lista de tipos de caramelos disponibles
+    for i in range(len(matriz)):   # Recorre cada fila
+        for j in range(len(matriz[i])):  # Recorre cada columna dentro de la fila
+            tipo = choice(tipos)  # Sortea el tipo para esta celda
+            datos = elementos[tipo] # Saca puntaje y ruta de imagen
             matriz[i][j] = {
-                "puntaje": datos["puntaje"],                # Puntaje del caramelo sorteado
-                "img": pygame.image.load(datos["ruta"])      # Imagen cargada, se escala después
+                "tipo": tipo,
+                "puntos": datos["puntos"],  # Puntaje del caramelo sorteado
+                "img": pygame.image.load(datos["img"]) # Imagen cargada, se escala después
             }
+
 
 
 
@@ -183,62 +197,106 @@ def generar_tablero_valido_match_3(filas:int, columnas:int, elementos:dict, rect
         if matriz_es_valida(matriz):
             return matriz
         
+# def hay_match_resuelto(matriz: list[list]) -> bool:
+#     """
+#     Devuelve True si HAY algún grupo de 3 o más elementos iguales en fila o columna.
+#     Se usa en la inicialización para rechazar matrices con combos ya hechos.
+#     """
+#     filas = len(matriz)
+#     columnas = len(matriz[0])
+
+#     # Chequeo filas
+#     for i in range(filas):
+#         for j in range(columnas - 2):  # Solo hasta la antepenúltima
+#             tipo1 = matriz[i][j].get("img")
+#             tipo2 = matriz[i][j+1].get("img")
+#             tipo3 = matriz[i][j+2].get("img")
+#             if tipo1 == tipo2 and tipo2 == tipo3:
+#                 return True
+
+#     # Chequeo columnas
+#     for j in range(columnas):
+#         for i in range(filas - 2):  # Solo hasta la antepenúltima
+#             tipo1 = matriz[i][j].get("img")
+#             tipo2 = matriz[i+1][j].get("img")
+#             tipo3 = matriz[i+2][j].get("img")
+#             if tipo1 == tipo2 and tipo2 == tipo3:
+#                 return True
+
+#     return False
+
 def hay_match_resuelto(matriz: list[list]) -> bool:
-    """
-    Devuelve True si HAY algún grupo de 3 o más elementos iguales en fila o columna.
-    Se usa en la inicialización para rechazar matrices con combos ya hechos.
-    """
     filas = len(matriz)
     columnas = len(matriz[0])
-
     # Chequeo filas
     for i in range(filas):
         for j in range(columnas - 2):  # Solo hasta la antepenúltima
-            tipo1 = matriz[i][j].get("img")
-            tipo2 = matriz[i][j+1].get("img")
-            tipo3 = matriz[i][j+2].get("img")
-            if tipo1 == tipo2 and tipo2 == tipo3:
+            t1 = matriz[i][j]["tipo"]
+            t2 = matriz[i][j+1]["tipo"]
+            t3 = matriz[i][j+2]["tipo"]
+            if t1 == t2 and t2 == t3:
                 return True
-
     # Chequeo columnas
     for j in range(columnas):
         for i in range(filas - 2):  # Solo hasta la antepenúltima
-            tipo1 = matriz[i][j].get("img")
-            tipo2 = matriz[i+1][j].get("img")
-            tipo3 = matriz[i+2][j].get("img")
-            if tipo1 == tipo2 and tipo2 == tipo3:
+            t1 = matriz[i][j]["tipo"]
+            t2 = matriz[i+1][j]["tipo"]
+            t3 = matriz[i+2][j]["tipo"]
+            if t1 == t2 and t2 == t3:
                 return True
-
     return False
 
+
+
+# def hay_jugada_posible(matriz: list[list]) -> bool:
+#     """
+#     Devuelve True si existe algún swap entre dos adyacentes que forme un combo al hacerlo.
+#     Así se garantiza que el tablero SIEMPRE tiene jugadas y no está bloqueado.
+#     """
+#     filas = len(matriz)
+#     columnas = len(matriz[0])
+
+#     for i in range(filas):
+#         for j in range(columnas):
+#             # Check hacia la derecha (swap horizontal)
+#             if j < columnas - 1:
+#                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # swap temporal
+#                 if hay_match_resuelto(matriz):
+#                     matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
+#                     return True
+#                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
+
+#             # Check hacia abajo (swap vertical)
+#             if i < filas - 1:
+#                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # swap temporal
+#                 if hay_match_resuelto(matriz):
+#                     matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
+#                     return True
+#                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
+
+#     return False
 
 def hay_jugada_posible(matriz: list[list]) -> bool:
-    """
-    Devuelve True si existe algún swap entre dos adyacentes que forme un combo al hacerlo.
-    Así se garantiza que el tablero SIEMPRE tiene jugadas y no está bloqueado.
-    """
     filas = len(matriz)
     columnas = len(matriz[0])
-
     for i in range(filas):
         for j in range(columnas):
-            # Check hacia la derecha (swap horizontal)
+            # Swap derecha
             if j < columnas - 1:
-                matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # swap temporal
+                matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
                 if hay_match_resuelto(matriz):
-                    matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
+                    matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
                     return True
-                matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
-
-            # Check hacia abajo (swap vertical)
+                matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
+            # Swap abajo
             if i < filas - 1:
-                matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # swap temporal
+                matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
                 if hay_match_resuelto(matriz):
-                    matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
+                    matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
                     return True
-                matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
-
+                matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
     return False
+
 
 def matriz_es_valida(matriz: list[list]) -> bool:
     # No debe tener match hecho y debe tener jugada posible
