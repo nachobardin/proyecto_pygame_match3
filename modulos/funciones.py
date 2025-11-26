@@ -51,11 +51,11 @@ def crear_botones_matriz_sobre_contenedor(matriz: list[list], rect_cont: pygame.
     Si cambia la resolución o el tamaño del tablero, hay que volver a llamar a esta función.
     """
     # Calcula ancho y alto para cada celda, dejando pequeños márgenes (4%)
-    ancho_celda_matriz = int(rect_cont.width * 0.96 / len(matriz[0]))  # El 96% del ancho dividido "columnas"
-    alto_celda_matriz  = int(rect_cont.height * 0.96 / len(matriz))    # El 96% del alto dividido "filas"
+    ancho_celda_matriz = int(rect_cont.width * 0.98 / len(matriz[0]))  # El 96% del ancho dividido "columnas"
+    alto_celda_matriz  = int(rect_cont.height * 0.98 / len(matriz))    # El 96% del alto dividido "filas"
     # Offset para márgenes en el área del tablero ("dejamos 2% de marco arriba/izq")
-    offset_x = int(rect_cont.width * 0.02) + rect_cont.x
-    offset_y = int(rect_cont.height * 0.02) + rect_cont.y
+    offset_x = int(rect_cont.width * 0.01) + rect_cont.x
+    offset_y = int(rect_cont.height * 0.01) + rect_cont.y
 
     for i in range(len(matriz)):           # Para cada fila
         for j in range(len(matriz[i])):    # Para cada columna

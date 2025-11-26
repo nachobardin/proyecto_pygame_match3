@@ -45,11 +45,11 @@ y_boton_volver = pantalla.get_height() - alto_boton - int(pantalla.get_height()*
 y_boton_reiniciar = y_boton_volver - alto_boton - int(pantalla.get_height()*0.02) # Encima de volver
 
 # Parámetros para ranuras
-ancho_ranura = int(pantalla.get_width() * 0.65)
-alto_ranura = int(pantalla.get_height() * 0.07)
+ancho_ranura = int(pantalla.get_width() * 0.35)
+alto_ranura = int(pantalla.get_height() * 0.05)
 x_ranura = (pantalla.get_width() - ancho_ranura) // 2
-margen_superior_ranura = int(pantalla.get_height() * 0.23)  # Justo debajo de "MEJORES PUNTAJES"
-margen_vertical_ranura = int(alto_ranura * 0.33)
+margen_superior_ranura = int(pantalla.get_height() * 0.43)  # Justo debajo de "MEJORES PUNTAJES"
+margen_vertical_ranura = int(alto_ranura * 0.13)
 
 # Creacion de los rectángulos para cada botón
 rect_boton_jugar      = pygame.Rect(x_boton, y_boton_jugar, ancho_boton, alto_boton)
@@ -91,10 +91,10 @@ rect_img_cont_puntaje = img_cont_puntaje.get_rect(midleft=(margen_izquierdo, pan
 # Creacion del rectangulo contenedor
 # El rectángulo contenedor ocupa 60% del ancho de pantalla y 90% del alto,
 # y está desplazado 30% desde la izquierda para quedar centrado.
-rect_contenedor_y = int(pantalla.get_height() * 0.05)        # 5% de margen
-rect_contenedor_x = int(pantalla.get_width() * 0.21)         # 30% desde la izquierda
-rect_contenedor_ancho = int(pantalla.get_width() * 0.70)     # 60% del ancho total
-rect_contenedor_alto  = int(pantalla.get_height() * 0.90)    # 90% del alto total
+rect_contenedor_y = int(pantalla.get_height() * 0.09)        # 5% de margen
+rect_contenedor_x = int(pantalla.get_width() * 0.26)         # 30% desde la izquierda
+rect_contenedor_ancho = int(pantalla.get_width() * 0.66)     # 72% del ancho total
+rect_contenedor_alto  = int(pantalla.get_height() * 0.82)    # 88% del alto total
 rect_contenedor = pygame.Rect(
     rect_contenedor_x,
     rect_contenedor_y,
@@ -204,11 +204,11 @@ while corriendo:
                     rect_boton_volver     = pygame.Rect(margen_izquierdo, y_boton_volver, ancho_boton, alto_boton) 
 
                     # Reescalado de ranuras
-                    ancho_ranura = int(pantalla.get_width() * 0.65)
-                    alto_ranura = int(pantalla.get_height() * 0.07)
+                    ancho_ranura = int(pantalla.get_width() * 0.35)
+                    alto_ranura = int(pantalla.get_height() * 0.05)
                     x_ranura = (pantalla.get_width() - ancho_ranura) // 2
-                    margen_superior_ranura = int(pantalla.get_height() * 0.23) 
-                    margen_vertical_ranura = int(alto_ranura * 0.33)
+                    margen_superior_ranura = int(pantalla.get_height() * 0.43)  # Justo debajo de "MEJORES PUNTAJES"
+                    margen_vertical_ranura = int(alto_ranura * 0.13)
 
                     # Reescalado de imagenes
                     img_btn_jugar      = colocar_img_boton(RUTA_JUGAR_BTN, ancho_boton, alto_boton)
@@ -233,10 +233,10 @@ while corriendo:
                     img_cont_puntaje = colocar_img_boton(RUTA_CONT_PUNTAJE, ancho_cont_puntaje, alto_cont_puntaje)
 
                     # Reescalado de rectangulo contenedor
-                    rect_contenedor_y = int(pantalla.get_height() * 0.05)        # 5% de margen
-                    rect_contenedor_x = int(pantalla.get_width() * 0.21)         # 30% desde la izquierda
-                    rect_contenedor_ancho = int(pantalla.get_width() * 0.70)     # 60% del ancho total
-                    rect_contenedor_alto  = int(pantalla.get_height() * 0.90)    # 90% del alto total
+                    rect_contenedor_y = int(pantalla.get_height() * 0.09)        # 5% de margen
+                    rect_contenedor_x = int(pantalla.get_width() * 0.26)         # 30% desde la izquierda
+                    rect_contenedor_ancho = int(pantalla.get_width() * 0.66)     # 72% del ancho total
+                    rect_contenedor_alto  = int(pantalla.get_height() * 0.82)    # 88% del alto total
                     rect_contenedor = pygame.Rect(
                         rect_contenedor_x,
                         rect_contenedor_y,
@@ -290,13 +290,13 @@ while corriendo:
 
               # Si tenés datos para ese puesto (nombre y puntaje), dibujalos dentro de la ranura
             # if i < len(lista_puntajes):
-            #     nombre, puntaje = lista_puntajes[i]  # Por ejemplo: ("Nacho", 330)
-            #     texto_nombre = fuente_puntaje.render(nombre, True, (65,35,30))
-            #     texto_puntaje = fuente_puntaje.render(str(puntaje), True, (65,35,30))
-            #     # Nombre alineado a la izquierda
-            #     pantalla.blit(texto_nombre, (x_ranura + 30, y_ranura + alto_ranura//3))
-            #     # Puntaje alineado a la derecha
-            #     pantalla.blit(texto_puntaje, (x_ranura + ancho_ranura - 80, y_ranura + alto_ranura//3))
+            #      nombre, puntaje = lista_puntajes[i]  # Por ejemplo: ("Nacho", 330)
+            #      texto_nombre = fuente_puntaje.render(nombre, True, (65,35,30))
+            #      texto_puntaje = fuente_puntaje.render(str(puntaje), True, (65,35,30))
+            #      # Nombre alineado a la izquierda
+            #      pantalla.blit(texto_nombre, (x_ranura + 30, y_ranura + alto_ranura//3))
+            #      # Puntaje alineado a la derecha
+            #      pantalla.blit(texto_puntaje, (x_ranura + ancho_ranura - 80, y_ranura + alto_ranura//3))
 
 
           # Render botones
@@ -326,9 +326,8 @@ while corriendo:
 
 
         # Tablero del juego
-        FONDO_TABLERO = escalar_fondo(RUTA_FONDO_TABLERO, (rect_contenedor_ancho, rect_contenedor_alto))
+        FONDO_TABLERO = escalar_fondo(RUTA_FONDO_TABLERO, (rect_contenedor.width, rect_contenedor.height))
         pantalla.blit(FONDO_TABLERO, rect_contenedor.topleft)
-
         dibujar_matriz(matriz, pantalla)
 
     pygame.display.flip()

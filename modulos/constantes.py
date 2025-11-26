@@ -14,7 +14,7 @@ AZUL = ( 0, 0, 255)
 
 
 # Resoluciones
-RESOLUCIONES = [(800, 600), (1024, 768), (1280, 720)]
+RESOLUCIONES = [(1280, 720), (1024, 768), (800, 600)]
 
 # Dimensiones del tablero
 CANTIDAD_FILAS = 8
@@ -37,7 +37,7 @@ RUTA_FONDO_PUNTAJES = "assets/img/fondo_puntajes.png"
 RUTA_FONDO_JUEGO = "assets/img/fondo_juego.png"
 RUTA_FONDO_REGISTRO = "assets/img/fondo_registro.png"
 RUTA_FONDO_RESOLUCION = "assets/img/fondo_resolucion.jpg"
-RUTA_FONDO_TABLERO = "assets/img/fondo_tablero.png"
+RUTA_FONDO_TABLERO = "assets/img/fondo_tableroREC.png"
 
 RUTA_JUGAR_BTN = "assets/img/boton_jugar.png"
 RUTA_PUNTAJES_BTN = "assets/img/boton_puntajes.png"
@@ -78,10 +78,10 @@ IMG_TIMER = pygame.image.load(RUTA_TIMER_BTN)
 IMG_TIMER_ESCALADA = pygame.transform.scale(IMG_TIMER, (150, 90))
 DURACION_TIMER = 60
 
-RUTA_RANURA_1ERO = "assets/img/ranura1ero.png"
-RUTA_RANURA_2DO =  "assets/img/ranura2do.png"
-RUTA_RANURA_3ERO = "assets/img/ranura3ero.png"
-RUTA_RANURA_NORMAL = "assets/img/ranuraNormal.png"
+RUTA_RANURA_1ERO = "assets/img/ranura1eroREC.png"
+RUTA_RANURA_2DO =  "assets/img/ranura2doREC.png"
+RUTA_RANURA_3ERO = "assets/img/ranura3eroREC.png"
+RUTA_RANURA_NORMAL = "assets/img/ranuraNormalREC.png"
 
 RANURA_1ERO = pygame.image.load(RUTA_RANURA_1ERO)
 RANURA_2DO = pygame.image.load(RUTA_RANURA_2DO)
