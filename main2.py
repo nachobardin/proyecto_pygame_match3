@@ -8,7 +8,6 @@ pygame.display.set_icon(LOGO)  # Carga el icono de la ventana
 pygame.display.set_caption(TITULO_JUEGO) # Titulo de la ventana principal
 
 # Pantalla y resolucion
-RESOLUCIONES = [(800, 600), (1024, 768), (1280, 720)]
 indice_resolucion = 0  
 pantalla = pygame.display.set_mode(RESOLUCIONES[indice_resolucion])  # Se crea la pantalla con la resolucion inicial
 
@@ -18,10 +17,10 @@ pygame.mixer.music.set_volume(VOL_MUSICA)  # Se define el volumen de la musica
 pygame.mixer.music.play(-1)    # Se reproduce la música en loop infinito.
 
 # Fuentes
-fuente_timer = pygame.font.SysFont("arial", 30)                # Fuente para timer.
+fuente_timer = pygame.font.SysFont("gabriola", 80)                # Fuente para timer.
 fuente_titulo = pygame.font.SysFont("arial", 100, True, True)  # Fuente grande para títulos.
-fuente_puntaje = pygame.font.SysFont("arial", 40)              # Fuente mediana para puntajes.
-fuente_input = pygame.font.SysFont("arial", 40)                # Fuente para input de nombre de usuario.
+fuente_puntaje = pygame.font.SysFont("gabriola", 80)              # Fuente mediana para puntajes.
+fuente_input = pygame.font.SysFont("gabriola", 60)                # Fuente para input de nombre de usuario.
 
 # Carga y escalado de fondos para que se ajusten a la pantalla actual
 tam_actual_pantalla = pantalla.get_size()  # Tupla (ancho, alto)
@@ -68,13 +67,13 @@ img_btn_volver     = colocar_img_boton(RUTA_VOLVER_BTN, ancho_boton, alto_boton)
 img_btn_reiniciar  = colocar_img_boton(RUTA_REINICIAR_BTN, ancho_boton, alto_boton)
 
 # Timer escalado
-ancho_timer = pantalla.get_width() * 0.18
-alto_timer = pantalla.get_height() * 0.12
+ancho_timer = pantalla.get_width() * 0.20
+alto_timer = pantalla.get_height() * 0.18
 img_timer = colocar_img_boton(RUTA_TIMER_BTN, ancho_timer, alto_timer)
 
 # Contenedor puntaje escalado
-ancho_cont_puntaje = pantalla.get_width() * 0.18
-alto_cont_puntaje = pantalla.get_height() * 0.12
+ancho_cont_puntaje = pantalla.get_width() * 0.20
+alto_cont_puntaje = pantalla.get_height() * 0.18
 img_cont_puntaje = colocar_img_boton(RUTA_CONT_PUNTAJE, ancho_cont_puntaje, alto_cont_puntaje)
 
 # Centra las imágenes dentro de sus respectivos botones
@@ -192,8 +191,8 @@ while corriendo:
                     y_boton_reiniciar = y_boton_volver - alto_boton - int(pantalla.get_height()*0.02) # Encima de volver
 
                     # Timer reescalado
-                    ancho_timer = pantalla.get_width() * 0.18
-                    alto_timer = pantalla.get_height() * 0.12
+                    ancho_timer = pantalla.get_width() * 0.20
+                    alto_timer = pantalla.get_height() * 0.18
                     img_timer = colocar_img_boton(RUTA_TIMER_BTN, ancho_timer, alto_timer)
 
                     rect_boton_jugar      = pygame.Rect(x_boton, y_boton_jugar, ancho_boton, alto_boton)
@@ -228,8 +227,8 @@ while corriendo:
                     rect_img_cont_puntaje = img_cont_puntaje.get_rect(midleft=(margen_izquierdo, pantalla.get_height() // 2))
 
                     # Contenedor puntaje reescalado
-                    ancho_cont_puntaje = pantalla.get_width() * 0.18
-                    alto_cont_puntaje = pantalla.get_height() * 0.12
+                    ancho_cont_puntaje = pantalla.get_width() * 0.20
+                    alto_cont_puntaje = pantalla.get_height() * 0.18
                     img_cont_puntaje = colocar_img_boton(RUTA_CONT_PUNTAJE, ancho_cont_puntaje, alto_cont_puntaje)
 
                     # Reescalado de rectangulo contenedor

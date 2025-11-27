@@ -14,7 +14,7 @@ AZUL = ( 0, 0, 255)
 
 
 # Resoluciones
-RESOLUCIONES = [(1280, 720), (1024, 768), (800, 600)]
+RESOLUCIONES = [(1440, 900), (1280, 720), (1000, 600)]
 
 # Dimensiones del tablero
 CANTIDAD_FILAS = 8
@@ -39,15 +39,15 @@ RUTA_FONDO_REGISTRO = "assets/img/fondo_registro.png"
 RUTA_FONDO_RESOLUCION = "assets/img/fondo_resolucion.jpg"
 RUTA_FONDO_TABLERO = "assets/img/fondo_tableroREC.png"
 
-RUTA_JUGAR_BTN = "assets/img/boton_jugar.png"
-RUTA_PUNTAJES_BTN = "assets/img/boton_puntajes.png"
-RUTA_RESOLUCION_BTN = "assets/img/boton_resolucion.png"
-RUTA_SALIR_BTN = "assets/img/boton_salir.png"
-RUTA_VOLVER_BTN = "assets/img/boton_volver.png"
-RUTA_REINICIAR_BTN = "assets/img/boton_reiniciar.png"
+RUTA_JUGAR_BTN = "assets/img/jugarRECT.png"
+RUTA_PUNTAJES_BTN = "assets/img/puntajesRECT.png"
+RUTA_RESOLUCION_BTN = "assets/img/resolucionRECT.png"
+RUTA_SALIR_BTN = "assets/img/salirRECT.png"
+RUTA_VOLVER_BTN = "assets/img/volverRECT.png"
+RUTA_REINICIAR_BTN = "assets/img/reiniciarRECT.png"
 
-RUTA_TIMER_BTN = "assets/img/timer.png"
-RUTA_CONT_PUNTAJE = "assets\img\contenedor_puntaje.png"
+RUTA_TIMER_BTN = "assets/img/timerRECT.png"
+RUTA_CONT_PUNTAJE = "assets/img/cont_puntajeRECT.png"
 
 RUTA_FONDO_REGISTRO = "assets/img/fondo_registro.png"
 RUTA_RECTANGULO = "assets/img/rectangulo.png"

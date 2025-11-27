@@ -306,4 +306,8 @@ def matriz_es_valida(matriz: list[list]) -> bool:
         return False
     return True
 
-
+def mostrar_timer_regresivo(start_time, font, tiempo_total, pos=(10, 10), color=(255, 255, 255)):
+    tiempo = tiempo_total
+    lapso_tiempo = (pygame.time.get_ticks() - start_time) // 1000
+    tiempo_restante = max(0, tiempo - lapso_tiempo)
+    return tiempo_restante
