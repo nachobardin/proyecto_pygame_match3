@@ -14,7 +14,7 @@ AZUL = ( 0, 0, 255)
 NEGRO = (0, 0, 0)
 
 # Resoluciones
-RESOLUCIONES = [(1440, 900), (1280, 720), (1000, 600)]
+RESOLUCIONES = [(1920, 1000), (1600, 1000), (1440, 900)]
 
 # Dimensiones del tablero
 CANTIDAD_FILAS = 8
@@ -29,6 +29,9 @@ COLOR_FONDO = GRIS
 SONIDO_MENU = "assets/audio/Candy Crush Saga OST - World Map.mp3"
 VOL_MUSICA = 0.2
 SONIDO_VICTORIA = "assets/audio/victoria.wav"
+SONIDO_COMODIN = "assets/audio/sonido_comodin.wav"
+SONIDO_CLICK = "assets/audio/sonido_click.wav"
+SONIDO_COMBO = "assets/audio/sonido_combo.wav"
 
 # Rutas imagenes
 RUTA_LOGO = "assets/img/logo.png"
@@ -76,7 +79,7 @@ FONDO_RESOLUCION = pygame.transform.scale(FONDO_RESOLUCION, RESOLUCIONES[0])
 
 IMG_TIMER = pygame.image.load(RUTA_TIMER_BTN)
 IMG_TIMER_ESCALADA = pygame.transform.scale(IMG_TIMER, (150, 90))
-DURACION_TIMER = 20
+DURACION_TIMER = 60
 
 RUTA_RANURA_1ERO = "assets/img/ranura1eroREC.png"
 RUTA_RANURA_2DO =  "assets/img/ranura2doREC.png"

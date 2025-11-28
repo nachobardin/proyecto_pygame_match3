@@ -1,475 +1,506 @@
 import pygame
-from random import *
+from random import choice
 
-def inicializar_matriz(cant_filas:int, cant_columnas:int, valor_inicial:any=None)->list[list]:
+def inicializar_matriz(cant_filas: int, cant_columnas: int, valor_inicial: any = None) -> list[list]:
     """
+    PROPOSITO: Crea una matriz con las dimensiones especificadas, inicializando cada celda con un None.
+
+    PARAMETROS:
+        * cant_filas: La cantidad de filas de la matriz.
+        * cant_columnas: La cantidad de columnas de la matriz.
+        * valor_inicial: Valor con el que se rellenan todas las celdas al principio.
+
+    RETORNA: Una Matriz.
     """
-    matriz = []
+    matriz = [] # Creamos la lista vacía que contendrá las filas
+    
+    # Iteramos filas
     for _ in range(cant_filas):
-        fila = []
+        fila = [] # Creamos una lista vacía para la fila actual
+        
+        # Iteramos columnas
         for _ in range(cant_columnas):
-            fila.append(valor_inicial)
-        matriz.append(fila)
-    return matriz
-
-# def cargar_matriz_elementos(matriz: list[list], elementos: dict) -> None:
-#     """
-#     Rellena la matriz, asignando en cada celda un diccionario con la imagen y el puntaje
-#     de un caramelo aleatorio, usando los tipos definidos en 'elementos' (sin comodín).
-#     La imagen se carga ahora (de la ruta correspondiente); el rect se asigna después.
-#     """
-#     tipos = list(elementos.keys())  # Lista de tipos de caramelos disponibles
-#     for i in range(len(matriz)):           # Recorre cada fila
-#         for j in range(len(matriz[i])):    # Recorre cada columna dentro de la fila
-#             tipo = choice(tipos)           # Sortea el tipo para esta celda
-#             datos = elementos[tipo]        # Saca puntaje y ruta de imagen
-#             matriz[i][j] = {
-#                 "puntos": datos["puntos"],                # Puntaje del caramelo sorteado
-#                 "img": pygame.image.load(datos["img"])      # Imagen cargada, se escala después
-#             }
+            fila.append(valor_inicial) # Agregamos el None
+            
+        matriz.append(fila) # Agregamos la fila completa a la matriz
+    
+    return matriz 
 
 
 def cargar_matriz_elementos(matriz: list[list], elementos: dict) -> None:
-    tipos = list(elementos.keys()) # Lista de tipos de caramelos disponibles
-    for i in range(len(matriz)):   # Recorre cada fila
-        for j in range(len(matriz[i])):  # Recorre cada columna dentro de la fila
-            tipo = choice(tipos)  # Sortea el tipo para esta celda
-            datos = elementos[tipo] # Saca puntaje y ruta de imagen
+    """
+    PROPOSITO: Recorre la y rellena cada celda con un elemnto aleatorio del diccionario de elementos.
+
+    PARAMETROS:
+        * matriz: La matriz a rellenar.
+        * elementos: Diccionario que tiene los datos de cada tipo de elemento.
+
+    RETORNA: None.
+    """
+    # Obtenemos una lista con las claves (nombres) de los caramelos para poder elegir al azar
+    tipos = list(elementos.keys()) 
+    
+    # Recorremos índice por índice las filas de la matriz
+    for i in range(len(matriz)):
+        # Recorremos índice por índice las columnas de la fila actual
+        for j in range(len(matriz[i])):
+            
+            tipo = choice(tipos) # Elegimos un tipo de caramelo aleatorio
+            datos = elementos[tipo] # Obtenemos los datos (img, puntos) de ese caramelo
+            
+            # Asignamos a la celda un diccionario con toda la información necesaria
             matriz[i][j] = {
-                "tipo": tipo,
-                "puntos": datos["puntos"],  # Puntaje del caramelo sorteado
-                "img": pygame.image.load(datos["img"]) # Imagen cargada, se escala después
+                "tipo": tipo, # Nombre del tipo (ej: "oreo")
+                "puntos": datos["puntos"], # Valor en puntos
+                "img": pygame.image.load(datos["img"]), # Cargamos la imagen en memoria
+                "estado": "activo" # Definimos que está activo para jugar
             }
-
-
 
 
 def crear_botones_matriz_sobre_contenedor(matriz: list[list], rect_cont: pygame.Rect) -> None:
     """
-    Asigna el campo "rect" a cada celda de la matriz, 
-    calculando posición y tamaño para distribuir los caramelos dentro del área del tablero (`rect_cont`).
-    Si cambia la resolución o el tamaño del tablero, hay que volver a llamar a esta función.
-    """
-    # Calcula ancho y alto para cada celda, dejando pequeños márgenes (4%)
-    ancho_celda_matriz = int(rect_cont.width * 0.98 / len(matriz[0]))  # El 96% del ancho dividido "columnas"
-    alto_celda_matriz  = int(rect_cont.height * 0.98 / len(matriz))    # El 96% del alto dividido "filas"
-    # Offset para márgenes en el área del tablero ("dejamos 2% de marco arriba/izq")
-    offset_x = int(rect_cont.width * 0.01) + rect_cont.x
-    offset_y = int(rect_cont.height * 0.01) + rect_cont.y
+    PROPOSITO:
+        Calcula las dimensiones y posiciones de cada celda para que encajen proporcionalmente
+        dentro del área de juego (contenedor), y les asigna un objeto pygame.Rect para manejar colisiones.
 
-    for i in range(len(matriz)):           # Para cada fila
-        for j in range(len(matriz[i])):    # Para cada columna
-            # Calcula el rectángulo donde se dibuja ese caramelo
+    PARAMETROS:
+        * matriz: La estructura de datos del juego.
+        * rect_cont: El pygame.Rect que define el área total disponible para el tablero.
+
+    RETORNA:
+        * None (Agrega la clave "rect" a cada celda de la matriz).
+    """
+    # Calculamos el ancho de cada celda: usamos el 98% del ancho total dividido por la cantidad de columnas
+    ancho_celda_matriz = int(rect_cont.width * 0.98 / len(matriz[0]))
+    
+    # Calculamos el alto de cada celda: usamos el 98% del alto total dividido por la cantidad de filas
+    alto_celda_matriz  = int(rect_cont.height * 0.98 / len(matriz))
+    
+    # Calcula un margen inicial del 1% para que la tabla quede centrada dentro del contenedor
+    margen_x = int(rect_cont.width * 0.01) + rect_cont.x
+    margen_y = int(rect_cont.height * 0.01) + rect_cont.y
+
+    # Recorremos todas las filas
+    for i in range(len(matriz)):
+        # Recorremos todas las columnas
+        for j in range(len(matriz[i])):
+            
+            # Creamos el objeto Rect de Pygame calculado para esta posición específica (i, j)
             un_rectangulo = pygame.Rect(
-                (j * ancho_celda_matriz) + offset_x,       # Posición x
-                (i * alto_celda_matriz)  + offset_y,       # Posición y
-                ancho_celda_matriz,                        # Ancho
-                alto_celda_matriz                          # Alto
+                (j * ancho_celda_matriz) + margen_x, # Posición X: columna * ancho + margen
+                (i * alto_celda_matriz)  + margen_y, # Posición Y: fila * alto + margen
+                ancho_celda_matriz, # Ancho calculado
+                alto_celda_matriz   # Alto calculado
             )
-            # Le agrega/actualiza el campo "rect" a la celda de la matriz
+            
+            # Guardamos este rectángulo dentro del diccionario de la celda para usarlo luego (clicks/dibujo)
             matriz[i][j]["rect"] = un_rectangulo
 
 
-# def dibujar_matriz(matriz: list[list], pantalla: pygame.Surface) -> None:
-#     for i in range(len(matriz)):
-#         for j in range(len(matriz[i])):
-#             # Escala la imagen al tamaño del rect; así respeta el layout adaptable
-#             img_escalada = pygame.transform.scale(
-#                 matriz[i][j]["img"], 
-#                 (matriz[i][j]["rect"].width, matriz[i][j]["rect"].height)
-#             )
-#             pantalla.blit(img_escalada, matriz[i][j]["rect"])
-
-# def son_vecinos(a: tuple, b: tuple) -> bool:
-# #Devuelve True si las dos posiciones son adyacentes (arriba/abajo/izquierda/derecha)."""
-#     r1, c1 = a
-#     r2, c2 = b
-#     return (abs(r1 - r2) == 1 and c1 == c2) or (abs(c1 - c2) == 1 and r1 == r2)
-
-
-
-
-def buscar_matches(matriz: list[list]) -> set:
+def dibujar_matriz(matriz: list[list], pantalla: pygame.Surface, celda_sel: tuple = None) -> None:
     """
-    Busca coincidencias de 3 o más en filas y columnas.
-    Devuelve un set con todas las posiciones que forman parte del match.
+    PROPOSITO:
+        Renderiza visualmente el tablero en la pantalla. Dibuja las imágenes de los caramelos
+        y, si corresponde, resalta la celda seleccionada o los comodines activados.
+
+    PARAMETROS:
+        * matriz: La estructura de datos del juego.
+        * pantalla: La superficie principal de Pygame donde se dibujará.
+        * celda_sel: Tupla (fila, columna) con la celda seleccionada por el usuario (o None).
+
+    RETORNA:
+        * None.
     """
     filas = len(matriz)
     columnas = len(matriz[0])
-    celdas_matcheadas = set()
 
-    # --- Buscar en filas ---
+    # Recorremos toda la matriz para dibujar celda por celda
     for i in range(filas):
-        contador = 1
-        for j in range(1, columnas):
-            if matriz[i][j]["tipo"] == matriz[i][j - 1]["tipo"]:
-                contador += 1
-            else:
-                if contador >= 3:
-                    for k in range(j - contador, j):
-                        celdas_matcheadas.add((i, k))
-                contador = 1
+        for j in range(columnas):
+            elem = matriz[i][j] # Obtenemos el elemento actual
+            
+            # Verificamos si tiene una imagen cargada (si no es un espacio vacío post-eliminación)
+            if elem.get("img") is not None:
+                # Escalamos la imagen al tamaño actual del rectángulo (importante si cambió la resolución)
+                img_escalada = pygame.transform.scale(elem["img"], (elem["rect"].width, elem["rect"].height))
+                # Dibujamos la imagen escalada en la posición del rectángulo
+                pantalla.blit(img_escalada, elem["rect"])
+            
+            # Si la celda tiene activado el efecto de comodín (combo de 5)
+            if elem.get("efecto_comodin") == True:
+                DORADO = (255, 215, 0) # Definimos color dorado
+                # Dibujamos un recuadro grueso (5px) alrededor
+                pygame.draw.rect(pantalla, DORADO, elem["rect"], 5)
 
-        if contador >= 3:
-            for k in range(columnas - contador, columnas):
-                celdas_matcheadas.add((i, k))
-
-    # --- Buscar en columnas ---
-    for j in range(columnas):
-        contador = 1
-        for i in range(1, filas):
-            if matriz[i][j]["tipo"] == matriz[i - 1][j]["tipo"]:
-                contador += 1
-            else:
-                if contador >= 3:
-                    for k in range(i - contador, i):
-                        celdas_matcheadas.add((k, j))
-                contador = 1
-
-        if contador >= 3:
-            for k in range(filas - contador, filas):
-                celdas_matcheadas.add((k, j))
-
-    return celdas_matcheadas
+            # Si la celda corresponde a la selección actual del usuario
+            if celda_sel == (i, j):
+                # Dibujamos un recuadro blanco (3px) para indicar selección
+                pygame.draw.rect(pantalla, (255, 255, 255), elem["rect"], 3)
 
 
-def hay_match(matriz: list[list]) -> bool:
-    """Devuelve True si existe un match de 3 o más en el tablero."""
-    return len(buscar_matches(matriz)) > 0
-
-
-def mostrar_timer_regresivo(screen, start_time, font, tiempo_total=60, pos=(10, 10), color=(255, 255, 255)):
-    lapso_tiempo = (pygame.time.get_ticks() - start_time) // 1000
-    tiempo_restante = max(0, tiempo_total - lapso_tiempo)
-    return tiempo_restante
-
-
-def cambiar_resolucion(i, resoluciones):
-    if i + 1 < len(resoluciones):
-        nuevo_indice = i + 1
-    else:
-        nuevo_indice = 0
-    nueva_resolucion = resoluciones[nuevo_indice]
-    pantalla = pygame.display.set_mode(nueva_resolucion)
-    return pantalla, nuevo_indice
-
-
-def imagen_boton_escalada(ruta_img, rect):
+def intercambiar(matriz: list[list], a: tuple, b: tuple) -> None:
     """
+    PROPOSITO:
+        Realiza un intercambio (swap) del contenido lógico entre dos celdas dadas,
+        asegurando que los rectángulos físicos (posiciones en pantalla) se mantengan en su lugar.
+
+    PARAMETROS:
+        * matriz: El tablero de juego.
+        * a: Tupla (fila, columna) de la primera celda.
+        * b: Tupla (fila, columna) de la segunda celda.
+
+    RETORNA:
+        * None.
     """
-    img = pygame.image.load(ruta_img)
-    return pygame.transform.scale(img, (rect.width, rect.height))
+    r1, c1 = a # Desempaquetamos coordenadas de la celda A
+    r2, c2 = b # Desempaquetamos coordenadas de la celda B
+    
+    # -- Intercambio Lógico (Datos) --
+    aux = matriz[r1][c1].copy() # Copiamos los datos de A en auxiliar
+    matriz[r1][c1] = matriz[r2][c2] # Ponemos los datos de B en A
+    matriz[r2][c2] = aux # Ponemos los datos de A (aux) en B
+    
+    # -- Corrección Física (Rectángulos) --
+    # Al mover los diccionarios, se llevaron sus posiciones rectangulares viejas.
+    # Debemos intercambiar los 'rect' para que el objeto en (0,0) tenga el rect de (0,0).
+    temp_rect = matriz[r1][c1]["rect"] # Guardamos rect de la nueva posición A
+    
+    matriz[r1][c1]["rect"] = matriz[r2][c2]["rect"] # Le asignamos a A el rect que tenía B
+    matriz[r2][c2]["rect"] = temp_rect # Le asignamos a B el rect que tenía A
 
-def escalar_fondo(ruta, tamanio):
+
+def son_vecinos(a: tuple, b: tuple) -> bool:
     """
-    PROPOSITO: Carga una imagen de fondo y la escala al tamaño actual de la pantalla.
+    PROPOSITO:
+        Determina si dos coordenadas del tablero son adyacentes de forma ortogonal
+        (arriba, abajo, izquierda o derecha), ignorando diagonales.
+
+    PARAMETROS:
+        * a: Tupla (fila, columna) de origen.
+        * b: Tupla (fila, columna) de destino.
+
+    RETORNA:
+        * Bool: True si son vecinos directos, False en caso contrario.
     """
-    return pygame.transform.scale(pygame.image.load(ruta), tamanio)
+    r1, c1 = a
+    r2, c2 = b
+    
+    # Chequeamos: (Misma columna Y diferencia de 1 fila) O (Misma fila Y diferencia de 1 columna)
+    es_vecino = (abs(r1 - r2) == 1 and c1 == c2) or (abs(c1 - c2) == 1 and r1 == r2)
+    
+    return es_vecino
 
-def colocar_img_boton(ruta_img, ancho, alto):
+
+def obtener_coordenada_click(matriz: list[list], pos_click: tuple) -> tuple:
     """
-    PROPOSITO: Carga la imagen del botón desde archivo y la escala al tamaño recibido.
+    PROPOSITO:
+        Traduce una posición de pantalla (pixeles X, Y del mouse) a coordenadas lógicas 
+        de la matriz (fila, columna).
+
+    PARAMETROS:
+        * matriz: El tablero con los rectángulos definidos.
+        * pos_click: Tupla (x, y) donde se hizo click.
+
+    RETORNA:
+        * Tupla (fila, columna) si el click fue válido.
+        * None si el click no cayó sobre ninguna celda.
     """
-    img = pygame.image.load(ruta_img)
-    return pygame.transform.scale(img, (int(ancho), int(alto)))
+    ubicacion_click = None
+    
+    # Recorremos toda la matriz buscando colisión
+    for i in range(len(matriz)):
+        for j in range(len(matriz[0])):
+            
+            # Usamos collidepoint del Rect para ver si el mouse tocó esta celda
+            if matriz[i][j]["rect"].collidepoint(pos_click):
+                ubicacion_click = (i, j) # Guardamos la coordenada encontrada
+                return ubicacion_click # Retornamos inmediatamente
+    
+    return ubicacion_click # Retornamos None si no encontró nada
 
 
-
-def generar_tablero_valido_match_3(filas:int, columnas:int, elementos:dict, rect_cont) -> list[list]:
+def reproducir_sonido(ruta: str) -> None:
     """
-    Sigue creando matrices aleatorias hasta que salga una que es válida.
+    PROPOSITO:
+        Carga y reproduce un efecto de sonido dado por su ruta de archivo.
+        Incluye manejo de errores para evitar caídas si falta el archivo.
+
+    PARAMETROS:
+        * ruta: Cadena con la dirección del archivo de audio.
+
+    RETORNA:
+        * None.
     """
-    while True:
-        matriz = inicializar_matriz(filas, columnas, rect_cont)
-        cargar_matriz_elementos(matriz, elementos)
-        crear_botones_matriz_sobre_contenedor(matriz, rect_cont)
-        if matriz_es_valida(matriz):
-            return matriz
-        
-# def hay_match_resuelto(matriz: list[list]) -> bool:
-#     """
-#     Devuelve True si HAY algún grupo de 3 o más elementos iguales en fila o columna.
-#     Se usa en la inicialización para rechazar matrices con combos ya hechos.
-#     """
-#     filas = len(matriz)
-#     columnas = len(matriz[0])
+    if ruta is not None: # Verificamos que la ruta sea válida
+        try:
+            sound = pygame.mixer.Sound(ruta) # Cargamos el sonido
+            sound.set_volume(0.5) # Ajustamos volumen medio
+            sound.play() # Reproducimos una vez
+        except:
+            pass # Si falla la carga, ignoramos el error silenciosamente
 
-#     # Chequeo filas
-#     for i in range(filas):
-#         for j in range(columnas - 2):  # Solo hasta la antepenúltima
-#             tipo1 = matriz[i][j].get("img")
-#             tipo2 = matriz[i][j+1].get("img")
-#             tipo3 = matriz[i][j+2].get("img")
-#             if tipo1 == tipo2 and tipo2 == tipo3:
-#                 return True
 
-#     # Chequeo columnas
-#     for j in range(columnas):
-#         for i in range(filas - 2):  # Solo hasta la antepenúltima
-#             tipo1 = matriz[i][j].get("img")
-#             tipo2 = matriz[i+1][j].get("img")
-#             tipo3 = matriz[i+2][j].get("img")
-#             if tipo1 == tipo2 and tipo2 == tipo3:
-#                 return True
-
-#     return False
+# -------------------------------------------------------------------------
+# LÓGICA DE MATCHES Y COMBOS
+# -------------------------------------------------------------------------
 
 def hay_match_resuelto(matriz: list[list]) -> bool:
+    """
+    PROPOSITO:
+        Escanea todo el tablero buscando si existe alguna línea de 3 o más elementos iguales.
+        Se utiliza principalmente para validar que el tablero inicial no comience "roto".
+
+    PARAMETROS:
+        * matriz: El tablero a analizar.
+
+    RETORNA:
+        * Bool: True si hay al menos un match formado, False si está limpio.
+    """
     filas = len(matriz)
     columnas = len(matriz[0])
-    # Chequeo filas
+    
+    # --- Verificación Horizontal ---
     for i in range(filas):
-        for j in range(columnas - 2):  # Solo hasta la antepenúltima
+        # Iteramos hasta antepenúltima columna para poder mirar +1 y +2 sin error de índice
+        for j in range(columnas - 2):
             t1 = matriz[i][j]["tipo"]
             t2 = matriz[i][j+1]["tipo"]
             t3 = matriz[i][j+2]["tipo"]
+            # Si los tres tipos son iguales, hay match
             if t1 == t2 and t2 == t3:
                 return True
-    # Chequeo columnas
+                
+    # --- Verificación Vertical ---
     for j in range(columnas):
-        for i in range(filas - 2):  # Solo hasta la antepenúltima
+        # Iteramos hasta antepenúltima fila para poder mirar +1 y +2 sin error de índice
+        for i in range(filas - 2):
             t1 = matriz[i][j]["tipo"]
             t2 = matriz[i+1][j]["tipo"]
             t3 = matriz[i+2][j]["tipo"]
+            # Si los tres tipos son iguales, hay match
             if t1 == t2 and t2 == t3:
                 return True
+                
     return False
 
 
-
-# def hay_jugada_posible(matriz: list[list]) -> bool:
-#     """
-#     Devuelve True si existe algún swap entre dos adyacentes que forme un combo al hacerlo.
-#     Así se garantiza que el tablero SIEMPRE tiene jugadas y no está bloqueado.
-#     """
-#     filas = len(matriz)
-#     columnas = len(matriz[0])
-
-#     for i in range(filas):
-#         for j in range(columnas):
-#             # Check hacia la derecha (swap horizontal)
-#             if j < columnas - 1:
-#                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # swap temporal
-#                 if hay_match_resuelto(matriz):
-#                     matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
-#                     return True
-#                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]  # revertir swap
-
-#             # Check hacia abajo (swap vertical)
-#             if i < filas - 1:
-#                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # swap temporal
-#                 if hay_match_resuelto(matriz):
-#                     matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
-#                     return True
-#                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]  # revertir swap
-
-#     return False
-
 def hay_jugada_posible(matriz: list[list]) -> bool:
+    """
+    PROPOSITO:
+        Determina si el jugador tiene algún movimiento válido disponible.
+        Prueba intercambiar cada celda con sus vecinos para ver si se forma un match.
+
+    PARAMETROS:
+        * matriz: El tablero actual.
+
+    RETORNA:
+        * Bool: True si existe al menos un movimiento que genere match, False si no hay movimientos.
+    """
     filas = len(matriz)
     columnas = len(matriz[0])
+    
     for i in range(filas):
         for j in range(columnas):
-            # Swap derecha
-            if j < columnas - 1:
+            
+            # --- Prueba: Swap hacia la Derecha ---
+            if j < columnas - 1: # Solo si no es la última columna
+                # Hacemos el swap temporal
                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
+                
+                # Verificamos si formó match
                 if hay_match_resuelto(matriz):
+                    # Si formó match, revertimos y retornamos True (hay jugada)
                     matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
                     return True
+                
+                # Si no formó match, revertimos el cambio para seguir buscando
                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
-            # Swap abajo
-            if i < filas - 1:
+            
+            # --- Prueba: Swap hacia Abajo ---
+            if i < filas - 1: # Solo si no es la última fila
+                # Hacemos el swap temporal
                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
+                
+                # Verificamos si formó match
                 if hay_match_resuelto(matriz):
+                    # Si formó match, revertimos y retornamos True
                     matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
                     return True
+                
+                # Si no formó match, revertimos el cambio
                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
+                
     return False
 
 
 def matriz_es_valida(matriz: list[list]) -> bool:
-    # No debe tener match hecho y debe tener jugada posible
+    """
+    PROPOSITO:
+        Valida si un tablero recién generado cumple las condiciones para empezar el juego:
+        1. No tiene matches ya resueltos (que exploten solos).
+        2. Tiene al menos un movimiento posible para el jugador.
+
+    PARAMETROS:
+        * matriz: El tablero generado.
+
+    RETORNA:
+        * Bool: True si es válido, False si no cumple alguna condición.
+    """
+    # Si el tablero empieza con dulces explotando, no es válido
     if hay_match_resuelto(matriz):
         return False
+    # Si el tablero no tiene movimientos posibles (está trabado), no es válido
     if not hay_jugada_posible(matriz):
         return False
+    
     return True
 
-def cargar_lista_puntajes():
-    lista = []
-    try:
-        with open("puntajes.csv", "r") as archivo:
-            for linea in archivo:
-                try:
-                    # Separa por la coma y limpia el salto de línea de una vez
-                    nombre, puntaje = linea.strip().split(',')
-                    # Agrega a la lista convirtiendo el puntaje a numero
-                    lista.append((nombre, int(puntaje)))
-                except ValueError:
-                    # Si la linea está vacía o mal formada, la salta y sigue
-                    continue
-    except FileNotFoundError:
-        return [] # Si no existe el archivo, devuelve lista vacía
 
-    # Ordena de mayor a menor (tupla[1] es el puntaje)
-    lista.sort(key=lambda tupla: tupla[1], reverse=True)
-    
-    return lista[:10]
+def generar_tablero_valido_match_3(filas: int, columnas: int, elementos: dict, rect_cont: pygame.Rect) -> list[list]:
+    """
+    PROPOSITO:
+        Genera tableros aleatorios indefinidamente hasta encontrar uno que cumpla
+        todas las reglas de validez (sin matches iniciales, con jugadas posibles).
 
-def eliminar_y_rellenar(matriz, matches, elementos):
+    PARAMETROS:
+        * filas, columnas: Dimensiones de la matriz.
+        * elementos: Diccionario de golosinas.
+        * rect_cont: Rectángulo contenedor para cálculos gráficos.
+
+    RETORNA:
+        * Una matriz (lista de listas) válida y lista para jugar.
     """
-    1. Calcula puntaje.
-    2. Elimina items (pone None o genera nuevos).
-    3. Retorna puntaje sumado.
-    """
-    puntos_ganados = 0
-    
-    # 1. Sumar puntos y "vaciar" celdas
-    for (r, c) in matches:
-        puntos_ganados += matriz[r][c]["puntos"]
-        # Podríamos poner None, pero para hacerlo simple, generamos uno nuevo YA MISMO
-        # y simulamos que "baja" después.
-        # En un juego simple sin animación de caída compleja, podemos simplemente
-        # reemplazar los matches por nuevos items directamentes.
+    while True:
+        # 1. Inicializamos matriz vacía
+        matriz = inicializar_matriz(filas, columnas)
+        # 2. Cargamos elementos aleatorios
+        cargar_matriz_elementos(matriz, elementos)
+        # 3. Calculamos los rectángulos físicos
+        crear_botones_matriz_sobre_contenedor(matriz, rect_cont)
         
-    # Para hacerlo estilo Candy Crush (Gravedad):
-    # Es un poco complejo de programar la caída exacta en una sola función simple.
-    # VAMOS A HACER LA VERSIÓN SIMPLE: Reemplazar los eliminados por nuevos random.
-    
-    tipos = list(elementos.keys())
-    
-    for (r, c) in matches:
-        nuevo_tipo = choice(tipos)
-        datos = elementos[nuevo_tipo]
-        
-        # Guardamos el rect viejo para no perder la posición
-        rect_viejo = matriz[r][c]["rect"]
-        
-        matriz[r][c] = {
-            "tipo": nuevo_tipo,
-            "puntos": datos["puntos"],
-            "img": pygame.image.load(datos["img"]),
-            "rect": rect_viejo # Mantenemos el rect
-        }
-        
-    return puntos_ganados
+        # 4. Si cumple las reglas, salimos del bucle y retornamos
+        if matriz_es_valida(matriz):
+            return matriz
 
 
-def intercambiar(matriz: list[list], a: tuple, b: tuple) -> None:
-    r1, c1 = a
-    r2, c2 = b
-    # Intercambio de datos (copia superficial)
-    aux = matriz[r1][c1].copy()
-    matriz[r1][c1] = matriz[r2][c2]
-    matriz[r2][c2] = aux
-    
-    # Restaurar rects originales (física)
-    temp_rect = matriz[r1][c1]["rect"]
-    matriz[r1][c1]["rect"] = matriz[r2][c2]["rect"]
-    matriz[r2][c2]["rect"] = temp_rect
-    return None
-
-def son_vecinos(a: tuple, b: tuple) -> bool:
+def marcar_matches(matriz: list[list], sonido_comodin, sonido_normal, coord_foco=None) -> bool:
     """
-    Devuelve True si las celdas son adyacentes horizontal o verticalmente.
-    NO incluye diagonales.
-    """
-    r1, c1 = a
-    r2, c2 = b
-    
-    es_vecino = False
-    
-    # Chequeo horizontal (misma fila, columna difiere en 1)
-    if r1 == r2:
-        if c1 == c2 + 1 or c1 == c2 - 1:
-            es_vecino = True
-            
-    # Chequeo vertical (misma columna, fila difiere en 1)
-    elif c1 == c2:
-        if r1 == r2 + 1 or r1 == r2 - 1:
-            es_vecino = True
-            
-    return es_vecino
+    PROPOSITO:
+        Función principal de lógica de juego. Analiza el tablero para encontrar líneas de 3+.
+        Detecta combos especiales (5+), gestiona la creación de comodines, reproduce sonidos
+        y marca las celdas que deben ser eliminadas.
 
+    PARAMETROS:
+        * matriz: El tablero de juego.
+        * sonido_comodin: Ruta o objeto de sonido para combo especial.
+        * sonido_normal: Ruta o objeto de sonido para match simple.
+        * coord_foco: (Opcional) Coordenada del último click para posicionar el comodín.
 
-def marcar_matches(matriz: list[list]) -> bool:
-    """
-    METODO SIMPLIFICADO (Ventana Deslizante):
-    Revisa grupos de 3 casilleros seguidos. Si son iguales, guarda sus coordenadas.
+    RETORNA:
+        * Bool: True si encontró algún match, False si no hubo coincidencias.
     """
     filas = len(matriz)
     cols = len(matriz[0])
-    celdas_match = set() # Bolsa de coordenadas unicas
+    celdas_match = set() # Usamos un set para guardar coordenadas sin duplicados
     
-    # 1. BUSQUEDA HORIZONTAL
-    # Vamos hasta 'cols - 2' porque miramos 2 casilleros adelante
+    # --- 1. Búsqueda Horizontal ---
     for f in range(filas):
-        for c in range(cols - 2):
-            tipo1 = matriz[f][c]["tipo"]
-            tipo2 = matriz[f][c+1]["tipo"]
-            tipo3 = matriz[f][c+2]["tipo"]
-            
-            # Si los 3 son iguales y NO son vacíos
-            if tipo1 == tipo2 and tipo2 == tipo3 and tipo1 != "vacio":
-                celdas_match.add((f, c))
-                celdas_match.add((f, c+1))
-                celdas_match.add((f, c+2))
+        contador = 1
+        for c in range(1, cols):
+            # Si el actual es igual al anterior
+            if matriz[f][c]["tipo"] == matriz[f][c-1]["tipo"]:
+                contador += 1
+            else:
+                # Si se corta la racha, chequeamos si llegamos a 3 o más
+                if contador >= 3:
+                    # Agregamos todas las celdas de esa racha al set de matches
+                    for k in range(c-contador, c): celdas_match.add((f, k))
+                contador = 1 # Reiniciamos contador
+        
+        # Chequeo final de fila (por si el match termina en el borde)
+        if contador >= 3:
+            for k in range(cols-contador, cols): celdas_match.add((f, k))
 
-    # 2. BUSQUEDA VERTICAL
-    # Vamos hasta 'filas - 2' porque miramos 2 casilleros abajo
+
+    # --- 2. Búsqueda Vertical ---
     for c in range(cols):
-        for f in range(filas - 2):
-            tipo1 = matriz[f][c]["tipo"]
-            tipo2 = matriz[f+1][c]["tipo"]
-            tipo3 = matriz[f+2][c]["tipo"]
-            
-            if tipo1 == tipo2 and tipo2 == tipo3 and tipo1 != "vacio":
-                celdas_match.add((f, c))
-                celdas_match.add((f+1, c))
-                celdas_match.add((f+2, c))
+        contador = 1
+        for f in range(1, filas):
+            # Si el actual es igual al de arriba
+            if matriz[f][c]["tipo"] == matriz[f-1][c]["tipo"]:
+                contador += 1
+            else:
+                # Si se corta la racha, chequeamos si llegamos a 3 o más
+                if contador >= 3:
+                    # Agregamos todas las celdas de esa racha
+                    for k in range(f-contador, f): celdas_match.add((k, c))
+                contador = 1 # Reiniciamos contador
+        
+        # Chequeo final de columna
+        if contador >= 3:
+            for k in range(filas-contador, filas): celdas_match.add((k, c))
 
-    # 3. PROCESAR RESULTADOS (Comodines y Marcas)
+
+    # --- 3. Procesamiento de Resultados ---
     hay_match = False
     
+    # Si encontramos alguna celda para eliminar
     if len(celdas_match) > 0:
         hay_match = True
+        hubo_combo_grande = False # Bandera para saber si activar el sonido especial
         
-        # --- Paso A: Agrupar por color para ver si alguien junto 5 o mas ---
+        # Paso A: Agrupar coordenadas por color para detectar combos grandes
         grupos_por_color = {}
-        
         for coord in celdas_match:
             f, c = coord
             color = matriz[f][c]["tipo"]
             
-            # Si es la primera vez que vemos este color, creamos su lista
-            if color in grupos_por_color:
-                pass
-            else:
+            if color not in grupos_por_color:
                 grupos_por_color[color] = []
-            
             grupos_por_color[color].append(coord)
             
-        # --- Paso B: Revisar quien merece comodin ---
+        # Paso B: Revisar cada grupo de color
         for color in grupos_por_color:
             lista_coords = grupos_por_color[color]
             
-            # Si este grupo tiene 5 o mas celdas
+            # Si un grupo tiene 5 o más celdas (COMBO ESPECIAL)
             if len(lista_coords) >= 5:
-                # Elegimos la primera celda para transformarla
-                f_com, c_com = lista_coords[0]
+                hubo_combo_grande = True 
+                
+                # Determinamos dónde nacerá el comodín
+                # Si hay un foco (click) y es parte del grupo, nace ahí. Si no, en la primera.
+                if coord_foco is not None and coord_foco in lista_coords:
+                    f_com, c_com = coord_foco
+                else:
+                    f_com, c_com = lista_coords[0]
+                
+                # Activamos flag visual de comodín
                 matriz[f_com][c_com]["efecto_comodin"] = True
                 
-                # Agregamos TODA la fila y columna a la bolsa de eliminar
-                # (Esto es el poder del comodin activandose)
-                for x in range(cols): 
-                    celdas_match.add((f_com, x))
-                for y in range(filas): 
-                    celdas_match.add((y, c_com))
+                # Reproducimos sonido especial
+                reproducir_sonido(sonido_comodin)
+                
+                # Cambiamos la imagen inmediatamente para feedback visual
+                try:
+                    matriz[f_com][c_com]["img"] = pygame.image.load("assets/img/comodin.png")
+                except:
+                    pass
+                
+                # PODER DEL COMODÍN: Agregamos fila y columna enteras para eliminar
+                for x in range(cols): celdas_match.add((f_com, x))
+                for y in range(filas): celdas_match.add((y, c_com))
 
-        # --- Paso C: Poner la etiqueta 'eliminar' final ---
+
+        # Paso C: Sonido Normal (solo si no hubo combos grandes)
+        if not hubo_combo_grande:
+            reproducir_sonido(sonido_normal)
+
+
+        # Paso D: Marcar flag lógico 'eliminar' en todas las celdas finales
         for coord in celdas_match:
             f, c = coord
             matriz[f][c]["eliminar"] = True
+
 
     return hay_match
 
@@ -477,176 +508,137 @@ def marcar_matches(matriz: list[list]) -> bool:
 def eliminar_y_puntuar(matriz: list[list], elementos: dict, comodin_dict: dict) -> int:
     """
     PROPOSITO:
-        Recorre la matriz buscando celdas que fueron marcadas previamente por 'marcar_matches'.
-        Ejecuta las acciones (eliminar o transformar) y calcula el puntaje total ganado.
+        Recorre la matriz ejecutando la eliminación de celdas marcadas.
+        Calcula el puntaje total sumando los valores de las fichas y bonus de comodín.
+        Deja las celdas eliminadas en estado 'vacio'.
 
     PARAMETROS:
-        matriz: El tablero de juego.
-        elementos: Diccionario con los caramelos normales.
-        comodin_dict: Diccionario con la info del comodín.
+        * matriz: El tablero de juego.
+        * elementos: Diccionario de valores normales.
+        * comodin_dict: Diccionario de valores del comodín.
 
-    RETORNO:
-        int: La cantidad total de puntos ganados en esta ronda.
+    RETORNA:
+        * int: Puntos totales acumulados en esta operación.
     """
-    
-    # Inicializamos el contador de puntos de esta ronda en 0
     puntos_totales = 0
-    
     filas = len(matriz)
     cols = len(matriz[0])
     
-    # Recorremos celda por celda
+    # Recorremos toda la matriz
     for f in range(filas):
         for c in range(cols):
-            
-            # Guardamos la celda actual en una variable corta para leer mejor
             celda = matriz[f][c]
             
-            # --- CASO 1: EFECTO DE COMODIN ---
-            # Si la celda fue elegida para convertirse en comodín (por un combo de 5)
+            # Si la celda era un comodín naciendo (tiene el efecto activado)
             if celda.get("efecto_comodin") == True:
+                puntos_totales += comodin_dict["comodin"]["puntos"] # Sumamos bonus
+                celda["efecto_comodin"] = False # Apagamos efecto
                 
-                # Sumamos el puntaje DEL COMODÍN (50)
-                # (Adicional a su puntaje normal de caramelo que se suma abajo)
-                puntos_totales += comodin_dict["comodin"]["puntos"]
-                
-                # Limpiamos la marca del efecto
-                celda["efecto_comodin"] = False
-                
-            # 2. Eliminación (Esto pasa para todas las marcadas, incluida la del comodín)
+            # Si la celda está marcada para eliminación
             if celda.get("eliminar") == True:
-                puntos_totales += celda["puntos"] # Puntos del caramelo normal (ej: 10)
+                puntos_totales += celda["puntos"] # Sumamos puntos del caramelo
                 
-                # Vaciamos
+                # Vaciamos la celda
                 celda["estado"] = "vacio"
                 celda["tipo"] = "vacio"
                 celda["img"] = None
-                celda["eliminar"] = False
+                celda["eliminar"] = False # Limpiamos flag
 
     return puntos_totales
+
 
 def rellenar_tablero(matriz: list[list], elementos: dict) -> None:
     """
     PROPOSITO:
-        Recorre toda la matriz buscando celdas que quedaron con estado "vacio".
-        En esos lugares, genera un nuevo caramelo aleatorio para rellenar el hueco.
-    
+        Escanea el tablero buscando huecos ('estado': 'vacio') y genera nuevos
+        elementos aleatorios para rellenarlos.
+
     PARAMETROS:
-        matriz: El tablero de juego actual.
-        elementos: El diccionario maestro (constantes) con la info de cada golosina (img, puntos).
+        * matriz: El tablero con huecos.
+        * elementos: Diccionario de elementos disponibles para generar.
+
+    RETORNA:
+        * None (Modifica la matriz in-place).
     """
-    
     filas = len(matriz)
     cols = len(matriz[0])
-    
-    # Obtenemos la lista de nombres posibles (ej: ['oreo', 'bonobon', ...])
-    # Usamos keys() para tener solo los nombres.
+    # Lista de claves para elegir random
     lista_elem_posibles = list(elementos.keys())
     
-    # Recorremos cada casillero del tablero
     for f in range(filas):
         for c in range(cols):
-            
-            # Chequeamos si esta celda está vacía (hueco negro)
+            # Si encontramos un hueco vacío
             if matriz[f][c].get("estado") == "vacio":
                 
-                # 1. ELEGIR QUÉ VAMOS A PONER
-                # Elegimos un nombre al azar de la lista
+                # Elegimos nuevo tipo
                 elem_nuevo = choice(lista_elem_posibles)
-                
-                # Buscamos los datos de ese nombre en el diccionario de constantes
-                # (Acá sacamos cuánto vale y dónde está su imagen)
                 datos_elem = elementos[elem_nuevo]
-                
-                # 2. RECUPERAR LA POSICIÓN (Clave para tu pregunta)
-                # La celda vacía todavía tiene guardado su rectángulo (posición X, Y).
-                # Lo guardamos en una variable para no perderlo al sobrescribir.
+                # Recuperamos el rectángulo original para mantener posición
                 rect_original = matriz[f][c]["rect"]
                 
-                # 3. CREAR EL NUEVO CARAMELO (INSTANCIA)
-                # Creamos un diccionario nuevo con la mezcla de datos:
-                # - Datos de la receta (tipo, puntos, imagen)
-                # - Datos de la posición (rect)
-                # - Datos de lógica (estado)
+                # Sobrescribimos la celda con el nuevo caramelo
                 matriz[f][c] = {
-                    "tipo": elem_nuevo,                 # Nombre (ej: "oreo")
-                    "puntos": datos_elem["puntos"],     # Valor (ej: 20)
-                    "img": pygame.image.load(datos_elem["img"]), # Cargamos la imagen nueva
-                    "rect": rect_original,                # ¡Acá reciclamos la posición vieja!
-                    "estado": "activo"                    # Le avisamos al juego que este ya se puede usar
+                    "tipo": elem_nuevo,
+                    "puntos": datos_elem["puntos"],
+                    "img": pygame.image.load(datos_elem["img"]),
+                    "rect": rect_original,
+                    "estado": "activo"
                 }
-                
-    return None
 
-def dibujar_matriz(matriz: list[list], pantalla: pygame.Surface, celda_sel: tuple = None) -> None:
+
+# -------------------------------------------------------------------------
+# SISTEMA DE ARCHIVOS Y UTILIDADES GRÁFICAS
+# -------------------------------------------------------------------------
+
+def cargar_lista_puntajes() -> list:
     """
     PROPOSITO:
-        Recorre cada celda del tablero lógico y dibuja su imagen correspondiente en la pantalla.
-        Si hay una celda seleccionada (primer click), le dibuja un borde blanco para resaltar.
-    
-    PARAMETROS:
-        matriz: La lista de listas que contiene los diccionarios de cada caramelo.
-        pantalla: La superficie principal de Pygame donde vamos a 'pegar' (blit) las imágenes.
-        celda_sel: (Opcional) Una tupla (fila, columna) indicando cuál caramelo clickeó el usuario.
-                   Si es None, significa que no hay nada seleccionado.
+        Lee el archivo 'puntajes.csv', procesa las líneas y devuelve el Top 10.
+
+    RETORNA:
+        * Lista de tuplas (nombre, puntaje) ordenada de mayor a menor.
     """
+    lista = []
+    try:
+        # Abrimos el archivo en modo lectura
+        with open("puntajes.csv", "r") as archivo:
+            for linea in archivo:
+                try:
+                    # Parseamos la línea csv
+                    nombre, puntaje = linea.strip().split(',')
+                    # Agregamos a la lista convirtiendo puntaje a int
+                    lista.append((nombre, int(puntaje)))
+                except ValueError:
+                    continue # Saltamos líneas con errores
+    except FileNotFoundError:
+        return [] # Si no existe, retornamos lista vacía
+
+
+    # Ordenamos la lista por puntaje (descendente)
+    lista.sort(key=lambda tupla: tupla[1], reverse=True)
     
-    filas = len(matriz)
-    columnas = len(matriz[0])
-
-    # Recorremos fila por fila (i)
-    for i in range(filas):
-        # Recorremos columna por columna (j)
-        for j in range(columnas):
-            
-            # Guardamos el diccionario del caramelo actual en una variable corta
-            elem = matriz[i][j]
-            
-            # --- 1. DIBUJO DEL CARAMELO ---
-            # Solo dibujamos si la celda tiene una imagen válida.
-            # Si item["img"] es None, significa que está "vacía" (ej: esperando caer),
-            # así que no dibujamos nada (se verá el fondo del tablero).
-            if elem.get("img") is not None:
-                
-                # Escalamos la imagen al tamaño exacto del rectángulo contenedor.
-                # Esto es útil por si cambiaste la resolución o el tamaño de los rects.
-                ancho_rect = elem["rect"].width
-                alto_rect = elem["rect"].height
-                img_escalada = pygame.transform.scale(elem["img"], (ancho_rect, alto_rect))
-                
-                # "Pegamos" la imagen escalada en la posición X,Y que dice el rect
-                pantalla.blit(img_escalada, elem["rect"])
-            
-            # --- 2. DIBUJO DEL BORDE DE SELECCIÓN ---
-            # Comparamos la coordenada actual (i, j) con la coordenada guardada en celda_sel
-            if celda_sel == (i, j):
-                # Si coinciden, dibujamos un cuadrado hueco encima
-                # Parámetros: (superficie, color RGB blanco, rectángulo, grosor de línea)
-                pygame.draw.rect(pantalla, (255, 255, 255), elem["rect"], 3)
-                
-    return None
+    # Retornamos solo los 10 mejores
+    return lista[:10]
 
 
-def obtener_coordenada_click(matriz: list[list], pos_click: tuple) -> tuple:
+def escalar_fondo(ruta: str, tamanio: tuple) -> pygame.Surface:
     """
-    Recibe la posición del mouse (x, y) y verifica si cayó sobre algún caramelo.
-    Devuelve una tupla (fila, columna) si encontró algo, o None si clickeó afuera.
+    PROPOSITO:
+        Carga una imagen desde una ruta y la escala al tamaño especificado.
+        
+    RETORNA:
+        * pygame.Surface con la imagen escalada.
     """
-    ubicacion_click = None
-    
-    for i in range(len(matriz)):
-        for j in range(len(matriz[0])):
-            # Chequeamos si el rectángulo de la celda contiene al punto del click
-            if matriz[i][j]["rect"].collidepoint(pos_click):
-                ubicacion_click = (i, j)
-                # Como ya encontramos, no hace falta seguir buscando.
-                # (En una función, el return corta todo, así que es más eficiente)
-                return ubicacion_click
-                
-    return ubicacion_click # Retorna None si recorrió todo y no encontró nada
+    return pygame.transform.scale(pygame.image.load(ruta), tamanio)
 
 
-
-
-
-
+def colocar_img_boton(ruta_img: str, ancho: int, alto: int) -> pygame.Surface:
+    """
+    PROPOSITO:
+        Carga una imagen de botón y la escala a las dimensiones deseadas.
+        
+    RETORNA:
+        * pygame.Surface con la imagen del botón lista para usar.
+    """
+    img = pygame.image.load(ruta_img)
+    return pygame.transform.scale(img, (int(ancho), int(alto)))
