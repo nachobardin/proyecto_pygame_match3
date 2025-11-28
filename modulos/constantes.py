@@ -32,6 +32,7 @@ SONIDO_VICTORIA = "assets/audio/victoria.wav"
 SONIDO_COMODIN = "assets/audio/sonido_comodin.wav"
 SONIDO_CLICK = "assets/audio/sonido_click.wav"
 SONIDO_COMBO = "assets/audio/sonido_combo.wav"
+SONIDO_JUEGO = "assets/audio/cocoa-cream-405665.wav"
 
 # Rutas imagenes
 RUTA_LOGO = "assets/img/logo.png"

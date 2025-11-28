@@ -29,7 +29,7 @@ def inicializar_matriz(cant_filas: int, cant_columnas: int, valor_inicial: any =
 
 def cargar_matriz_elementos(matriz: list[list], elementos: dict) -> None:
     """
-    PROPOSITO: Recorre la y rellena cada celda con un elemnto aleatorio del diccionario de elementos.
+    PROPOSITO: Recorre la matriz y rellena cada celda con un elemnto aleatorio del diccionario de elementos.
 
     PARAMETROS:
         * matriz: La matriz a rellenar.
@@ -59,24 +59,21 @@ def cargar_matriz_elementos(matriz: list[list], elementos: dict) -> None:
 
 def crear_botones_matriz_sobre_contenedor(matriz: list[list], rect_cont: pygame.Rect) -> None:
     """
-    PROPOSITO:
-        Calcula las dimensiones y posiciones de cada celda para que encajen proporcionalmente
-        dentro del área de juego (contenedor), y les asigna un objeto pygame.Rect para manejar colisiones.
+    PROPOSITO: Determina las dimensiones y posiciones de las celdas del tablero dentro del contenedor dado.
 
     PARAMETROS:
-        * matriz: La estructura de datos del juego.
-        * rect_cont: El pygame.Rect que define el área total disponible para el tablero.
+        * matriz: La matriz del juego.
+        * rect_cont: El rect contenedor que define el área total disponible para el tablero.
 
-    RETORNA:
-        * None (Agrega la clave "rect" a cada celda de la matriz).
+    RETORNA: None.
     """
-    # Calculamos el ancho de cada celda: usamos el 98% del ancho total dividido por la cantidad de columnas
+    # Calculamos el ancho de cada celda
     ancho_celda_matriz = int(rect_cont.width * 0.98 / len(matriz[0]))
     
-    # Calculamos el alto de cada celda: usamos el 98% del alto total dividido por la cantidad de filas
+    # Calculamos el alto de cada celda
     alto_celda_matriz  = int(rect_cont.height * 0.98 / len(matriz))
     
-    # Calcula un margen inicial del 1% para que la tabla quede centrada dentro del contenedor
+    # Calcula un margen inicial
     margen_x = int(rect_cont.width * 0.01) + rect_cont.x
     margen_y = int(rect_cont.height * 0.01) + rect_cont.y
 
@@ -85,7 +82,7 @@ def crear_botones_matriz_sobre_contenedor(matriz: list[list], rect_cont: pygame.
         # Recorremos todas las columnas
         for j in range(len(matriz[i])):
             
-            # Creamos el objeto Rect de Pygame calculado para esta posición específica (i, j)
+            # Crea el objeto Rect calculado para la posición(i, j)
             un_rectangulo = pygame.Rect(
                 (j * ancho_celda_matriz) + margen_x, # Posición X: columna * ancho + margen
                 (i * alto_celda_matriz)  + margen_y, # Posición Y: fila * alto + margen
@@ -93,23 +90,20 @@ def crear_botones_matriz_sobre_contenedor(matriz: list[list], rect_cont: pygame.
                 alto_celda_matriz   # Alto calculado
             )
             
-            # Guardamos este rectángulo dentro del diccionario de la celda para usarlo luego (clicks/dibujo)
+            # Guarda el rectangulo dentro del diccionario de la celda para usarlo despues (clicks/dibujo)
             matriz[i][j]["rect"] = un_rectangulo
 
 
 def dibujar_matriz(matriz: list[list], pantalla: pygame.Surface, celda_sel: tuple = None) -> None:
     """
-    PROPOSITO:
-        Renderiza visualmente el tablero en la pantalla. Dibuja las imágenes de los caramelos
-        y, si corresponde, resalta la celda seleccionada o los comodines activados.
+    PROPOSITO: Renderizar el tablero en la pantalla. Dibuja las imágenes de los elementos
 
     PARAMETROS:
-        * matriz: La estructura de datos del juego.
-        * pantalla: La superficie principal de Pygame donde se dibujará.
-        * celda_sel: Tupla (fila, columna) con la celda seleccionada por el usuario (o None).
+        * matriz: La matriz del jeugo.
+        * pantalla: La superficie donde se va a dibujar.
+        * celda_sel: Ubicacion con la celda seleccionada por el usuario (o None).
 
-    RETORNA:
-        * None.
+    RETORNA: None.
     """
     filas = len(matriz)
     columnas = len(matriz[0])
@@ -117,151 +111,145 @@ def dibujar_matriz(matriz: list[list], pantalla: pygame.Surface, celda_sel: tupl
     # Recorremos toda la matriz para dibujar celda por celda
     for i in range(filas):
         for j in range(columnas):
-            elem = matriz[i][j] # Obtenemos el elemento actual
+            elem = matriz[i][j] # El elemento actual
             
-            # Verificamos si tiene una imagen cargada (si no es un espacio vacío post-eliminación)
+            # Verifica si tiene una imagen cargada 
             if elem.get("img") is not None:
-                # Escalamos la imagen al tamaño actual del rectángulo (importante si cambió la resolución)
+                # Escala la imagen al tamanio actual del rectángulo 
                 img_escalada = pygame.transform.scale(elem["img"], (elem["rect"].width, elem["rect"].height))
-                # Dibujamos la imagen escalada en la posición del rectángulo
+                # Dibuja la imagen escalada en la posición del rectángulo
                 pantalla.blit(img_escalada, elem["rect"])
             
-            # Si la celda tiene activado el efecto de comodín (combo de 5)
+            # Si la celda tiene activado el efecto de comodín 
             if elem.get("efecto_comodin") == True:
-                DORADO = (255, 215, 0) # Definimos color dorado
-                # Dibujamos un recuadro grueso (5px) alrededor
+                DORADO = (255, 215, 0) 
+                # Dibuja el recuadro dorado
                 pygame.draw.rect(pantalla, DORADO, elem["rect"], 5)
 
-            # Si la celda corresponde a la selección actual del usuario
+            # Si la celda corresponde a la seleccionada por el usuario
             if celda_sel == (i, j):
-                # Dibujamos un recuadro blanco (3px) para indicar selección
+                # Dibuja un recuadro blanco para indicar selección
                 pygame.draw.rect(pantalla, (255, 255, 255), elem["rect"], 3)
 
 
 def intercambiar(matriz: list[list], a: tuple, b: tuple) -> None:
     """
-    PROPOSITO:
-        Realiza un intercambio (swap) del contenido lógico entre dos celdas dadas,
-        asegurando que los rectángulos físicos (posiciones en pantalla) se mantengan en su lugar.
+    PROPOSITO: Realiza un intercambio (swappeo) del contenido entre dos celdas dadas.
 
     PARAMETROS:
         * matriz: El tablero de juego.
         * a: Tupla (fila, columna) de la primera celda.
         * b: Tupla (fila, columna) de la segunda celda.
 
-    RETORNA:
-        * None.
+    RETORNA: None.
     """
-    r1, c1 = a # Desempaquetamos coordenadas de la celda A
-    r2, c2 = b # Desempaquetamos coordenadas de la celda B
+    f1, c1 = a # Desempaqueta coordenadas de la celda A
+    f2, c2 = b # Desempaqueta coordenadas de la celda B
     
-    # -- Intercambio Lógico (Datos) --
-    aux = matriz[r1][c1].copy() # Copiamos los datos de A en auxiliar
-    matriz[r1][c1] = matriz[r2][c2] # Ponemos los datos de B en A
-    matriz[r2][c2] = aux # Ponemos los datos de A (aux) en B
+    #  Intercambio (Datos) 
+    aux = matriz[f1][c1].copy() # Copiamos los datos de A en auxiliar
+    matriz[f1][c1] = matriz[f2][c2] # Ponemos los datos de B en A
+    matriz[f2][c2] = aux # Ponemos los datos de A (aux) en B
     
-    # -- Corrección Física (Rectángulos) --
-    # Al mover los diccionarios, se llevaron sus posiciones rectangulares viejas.
-    # Debemos intercambiar los 'rect' para que el objeto en (0,0) tenga el rect de (0,0).
-    temp_rect = matriz[r1][c1]["rect"] # Guardamos rect de la nueva posición A
+    #  Intercambio (Rectángulos) 
+    temp_rect = matriz[f1][c1]["rect"] # Guardamos rect de la nueva posición A
     
-    matriz[r1][c1]["rect"] = matriz[r2][c2]["rect"] # Le asignamos a A el rect que tenía B
-    matriz[r2][c2]["rect"] = temp_rect # Le asignamos a B el rect que tenía A
+    matriz[f1][c1]["rect"] = matriz[f2][c2]["rect"] # Le asignamos a A el rect que tenía B
+    matriz[f2][c2]["rect"] = temp_rect # Le asignamos a B el rect que tenía A
 
 
 def son_vecinos(a: tuple, b: tuple) -> bool:
     """
-    PROPOSITO:
-        Determina si dos coordenadas del tablero son adyacentes de forma ortogonal
-        (arriba, abajo, izquierda o derecha), ignorando diagonales.
+    PROPOSITO: Determina si dos coordenas del tablero son vecinas directas.
 
     PARAMETROS:
         * a: Tupla (fila, columna) de origen.
         * b: Tupla (fila, columna) de destino.
 
-    RETORNA:
-        * Bool: True si son vecinos directos, False en caso contrario.
+    RETORNA: Bool: True si son vecinos, False en caso contrario.
     """
-    r1, c1 = a
-    r2, c2 = b
+    f1, c1 = a
+    f2, c2 = b
     
-    # Chequeamos: (Misma columna Y diferencia de 1 fila) O (Misma fila Y diferencia de 1 columna)
-    es_vecino = (abs(r1 - r2) == 1 and c1 == c2) or (abs(c1 - c2) == 1 and r1 == r2)
-    
+    # Misma columna, la fila cambia en 1 (Arriba o Abajo)
+    if c1 == c2 and (f1 - f2 == 1 or f1 - f2 == -1):
+        es_vecino = True
+        
+    # Misma fila, la columna cambia en 1 (Izquierda o Derecha)
+    elif f1 == f2 and (c1 - c2 == 1 or c1 - c2 == -1):
+        es_vecino = True
+        
+    # No son adyacentes
+    else:
+        es_vecino = False
+        
     return es_vecino
+
 
 
 def obtener_coordenada_click(matriz: list[list], pos_click: tuple) -> tuple:
     """
-    PROPOSITO:
-        Traduce una posición de pantalla (pixeles X, Y del mouse) a coordenadas lógicas 
-        de la matriz (fila, columna).
+    PROPOSITO: Retorna la coordenada lógica (fila, columna) correspondiente al lugar donde se hizo click.
 
     PARAMETROS:
         * matriz: El tablero con los rectángulos definidos.
         * pos_click: Tupla (x, y) donde se hizo click.
 
     RETORNA:
-        * Tupla (fila, columna) si el click fue válido.
-        * None si el click no cayó sobre ninguna celda.
+        * Tupla (fila, columna) si encontro click en celda.
+        * None si el click no fue sobre ninguna celda.
     """
     ubicacion_click = None
     
-    # Recorremos toda la matriz buscando colisión
+    # Recorremos la matriz buscando colisión
     for i in range(len(matriz)):
         for j in range(len(matriz[0])):
             
-            # Usamos collidepoint del Rect para ver si el mouse tocó esta celda
+            # Usamos collidepoint del Rect para ver si el mouse toco esta celda
             if matriz[i][j]["rect"].collidepoint(pos_click):
-                ubicacion_click = (i, j) # Guardamos la coordenada encontrada
-                return ubicacion_click # Retornamos inmediatamente
+                ubicacion_click = (i, j) # Guardamos la coordenada 
+                return ubicacion_click # Retornamos ubicacion
     
     return ubicacion_click # Retornamos None si no encontró nada
 
 
 def reproducir_sonido(ruta: str) -> None:
     """
-    PROPOSITO:
-        Carga y reproduce un efecto de sonido dado por su ruta de archivo.
-        Incluye manejo de errores para evitar caídas si falta el archivo.
-
+    PROPOSITO: Cargar y reproducir un efecto de sonido.
+        
     PARAMETROS:
-        * ruta: Cadena con la dirección del archivo de audio.
+        * ruta: Dirección del archivo de audio.
 
-    RETORNA:
-        * None.
+    RETORNA: None.
     """
-    if ruta is not None: # Verificamos que la ruta sea válida
+    if ruta != None: # Verificamos que la ruta sea valida
         try:
             sound = pygame.mixer.Sound(ruta) # Cargamos el sonido
             sound.set_volume(0.5) # Ajustamos volumen medio
             sound.play() # Reproducimos una vez
         except:
-            pass # Si falla la carga, ignoramos el error silenciosamente
+            pass # Si falla la carga ignoramos el error
 
 
-# -------------------------------------------------------------------------
+
 # LÓGICA DE MATCHES Y COMBOS
-# -------------------------------------------------------------------------
+
 
 def hay_match_resuelto(matriz: list[list]) -> bool:
     """
-    PROPOSITO:
-        Escanea todo el tablero buscando si existe alguna línea de 3 o más elementos iguales.
-        Se utiliza principalmente para validar que el tablero inicial no comience "roto".
+    PROPOSITO: Determina si existe al menos un match resuelto en el tablero.
 
     PARAMETROS:
         * matriz: El tablero a analizar.
 
-    RETORNA:
-        * Bool: True si hay al menos un match formado, False si está limpio.
+    RETORNA: Bool: True si hay al menos un match formado, False caso contrario.
     """
     filas = len(matriz)
     columnas = len(matriz[0])
     
-    # --- Verificación Horizontal ---
+    #  Verificación Horizontal
     for i in range(filas):
-        # Iteramos hasta antepenúltima columna para poder mirar +1 y +2 sin error de índice
+        # Itera hasta la antepenultima columna para poder mirar +1 y +2 sin error de indice
         for j in range(columnas - 2):
             t1 = matriz[i][j]["tipo"]
             t2 = matriz[i][j+1]["tipo"]
@@ -270,9 +258,9 @@ def hay_match_resuelto(matriz: list[list]) -> bool:
             if t1 == t2 and t2 == t3:
                 return True
                 
-    # --- Verificación Vertical ---
+    #  Verificación Vertical
     for j in range(columnas):
-        # Iteramos hasta antepenúltima fila para poder mirar +1 y +2 sin error de índice
+        # Itera hasta antepenultima fila para poder mirar +1 y +2 sin error de indice
         for i in range(filas - 2):
             t1 = matriz[i][j]["tipo"]
             t2 = matriz[i+1][j]["tipo"]
@@ -286,15 +274,12 @@ def hay_match_resuelto(matriz: list[list]) -> bool:
 
 def hay_jugada_posible(matriz: list[list]) -> bool:
     """
-    PROPOSITO:
-        Determina si el jugador tiene algún movimiento válido disponible.
-        Prueba intercambiar cada celda con sus vecinos para ver si se forma un match.
+    PROPOSITO: Determina si el jugador tiene algún movimiento válido disponible.
 
     PARAMETROS:
         * matriz: El tablero actual.
 
-    RETORNA:
-        * Bool: True si existe al menos un movimiento que genere match, False si no hay movimientos.
+    RETORNA: Bool: True si existe al menos un movimiento que genere match, False caso contrario.
     """
     filas = len(matriz)
     columnas = len(matriz[0])
@@ -302,32 +287,32 @@ def hay_jugada_posible(matriz: list[list]) -> bool:
     for i in range(filas):
         for j in range(columnas):
             
-            # --- Prueba: Swap hacia la Derecha ---
-            if j < columnas - 1: # Solo si no es la última columna
-                # Hacemos el swap temporal
+            #  Swap hacia la derecha
+            if j < columnas - 1: # Solo si no es la ultima columna
+                # Hace el swap temporal
                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
                 
-                # Verificamos si formó match
+                # Verifica si formo match
                 if hay_match_resuelto(matriz):
-                    # Si formó match, revertimos y retornamos True (hay jugada)
+                    # Si formo match, revierte y retorna True
                     matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
                     return True
                 
-                # Si no formó match, revertimos el cambio para seguir buscando
+                # Si no formo match, revierte el cambio para seguir buscando
                 matriz[i][j], matriz[i][j+1] = matriz[i][j+1], matriz[i][j]
             
-            # --- Prueba: Swap hacia Abajo ---
+            #  Swap hacia Abajo
             if i < filas - 1: # Solo si no es la última fila
-                # Hacemos el swap temporal
+                # Hace el swap temporal
                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
                 
-                # Verificamos si formó match
+                # Verifica si formo match
                 if hay_match_resuelto(matriz):
-                    # Si formó match, revertimos y retornamos True
+                    # Si formo match, revierte y retorna True
                     matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
                     return True
                 
-                # Si no formó match, revertimos el cambio
+                # Si no formo match, revierte el cambio
                 matriz[i][j], matriz[i+1][j] = matriz[i+1][j], matriz[i][j]
                 
     return False
@@ -335,21 +320,20 @@ def hay_jugada_posible(matriz: list[list]) -> bool:
 
 def matriz_es_valida(matriz: list[list]) -> bool:
     """
-    PROPOSITO:
-        Valida si un tablero recién generado cumple las condiciones para empezar el juego:
-        1. No tiene matches ya resueltos (que exploten solos).
-        2. Tiene al menos un movimiento posible para el jugador.
+    PROPOSITO: Valida si un tablero recién generado cumple las condiciones para empezar el juego:
 
     PARAMETROS:
         * matriz: El tablero generado.
-
-    RETORNA:
-        * Bool: True si es válido, False si no cumple alguna condición.
+    
+    OBSERVACIONES:
+        * Un tablero es valido si: no tiene matches resueltos y tiene jugadas posibles.
+    
+    RETORNA: Bool: True si es válido, False caso contrario.
     """
-    # Si el tablero empieza con dulces explotando, no es válido
+    # Si el tablero empieza con match, no es valido
     if hay_match_resuelto(matriz):
         return False
-    # Si el tablero no tiene movimientos posibles (está trabado), no es válido
+    # Si el tablero no tiene movimientos posibles, no es valido
     if not hay_jugada_posible(matriz):
         return False
     
@@ -358,52 +342,45 @@ def matriz_es_valida(matriz: list[list]) -> bool:
 
 def generar_tablero_valido_match_3(filas: int, columnas: int, elementos: dict, rect_cont: pygame.Rect) -> list[list]:
     """
-    PROPOSITO:
-        Genera tableros aleatorios indefinidamente hasta encontrar uno que cumpla
-        todas las reglas de validez (sin matches iniciales, con jugadas posibles).
+    PROPOSITO: Genera tableros aleatorios indefinidamente hasta encontrar uno que cumpla.
 
     PARAMETROS:
         * filas, columnas: Dimensiones de la matriz.
         * elementos: Diccionario de golosinas.
         * rect_cont: Rectángulo contenedor para cálculos gráficos.
 
-    RETORNA:
-        * Una matriz (lista de listas) válida y lista para jugar.
+    RETORNA:Una matriz válida para jugar.
     """
     while True:
-        # 1. Inicializamos matriz vacía
+        # Inicializa la matriz vacía
         matriz = inicializar_matriz(filas, columnas)
-        # 2. Cargamos elementos aleatorios
+        # Carga elementos aleatorios
         cargar_matriz_elementos(matriz, elementos)
-        # 3. Calculamos los rectángulos físicos
+        # Calcula los rectangulos
         crear_botones_matriz_sobre_contenedor(matriz, rect_cont)
         
-        # 4. Si cumple las reglas, salimos del bucle y retornamos
+        # Si cumple con todo sale del bucle y retorna
         if matriz_es_valida(matriz):
             return matriz
 
 
-def marcar_matches(matriz: list[list], sonido_comodin, sonido_normal, coord_foco=None) -> bool:
+def marcar_matches(matriz: list[list], sonido_comodin, sonido_normal, coord_click=None) -> bool:
     """
-    PROPOSITO:
-        Función principal de lógica de juego. Analiza el tablero para encontrar líneas de 3+.
-        Detecta combos especiales (5+), gestiona la creación de comodines, reproduce sonidos
-        y marca las celdas que deben ser eliminadas.
+    PROPOSITO: Analizar el tablero para encontrar y marcar matches de 3 o mas, gestionar combos especiales, reproducir sonidos y marcar las celdas para eliminar.
 
     PARAMETROS:
         * matriz: El tablero de juego.
         * sonido_comodin: Ruta o objeto de sonido para combo especial.
         * sonido_normal: Ruta o objeto de sonido para match simple.
-        * coord_foco: (Opcional) Coordenada del último click para posicionar el comodín.
+        * coord_click: Coordenada del último click para posicionar el comodín.
 
-    RETORNA:
-        * Bool: True si encontró algún match, False si no hubo coincidencias.
+    RETORNA: Bool: True si encontro algun match, False caso contrario.
     """
     filas = len(matriz)
     cols = len(matriz[0])
     celdas_match = set() # Usamos un set para guardar coordenadas sin duplicados
     
-    # --- 1. Búsqueda Horizontal ---
+    # Búsqueda Horizontal
     for f in range(filas):
         contador = 1
         for c in range(1, cols):
@@ -411,9 +388,9 @@ def marcar_matches(matriz: list[list], sonido_comodin, sonido_normal, coord_foco
             if matriz[f][c]["tipo"] == matriz[f][c-1]["tipo"]:
                 contador += 1
             else:
-                # Si se corta la racha, chequeamos si llegamos a 3 o más
+                # Si se corta la racha, chequea si llega a 3 o más
                 if contador >= 3:
-                    # Agregamos todas las celdas de esa racha al set de matches
+                    # Agrega todas las celdas de la racha al set de matches
                     for k in range(c-contador, c): celdas_match.add((f, k))
                 contador = 1 # Reiniciamos contador
         
@@ -422,7 +399,7 @@ def marcar_matches(matriz: list[list], sonido_comodin, sonido_normal, coord_foco
             for k in range(cols-contador, cols): celdas_match.add((f, k))
 
 
-    # --- 2. Búsqueda Vertical ---
+    #  Búsqueda Vertical 
     for c in range(cols):
         contador = 1
         for f in range(1, filas):
@@ -430,75 +407,75 @@ def marcar_matches(matriz: list[list], sonido_comodin, sonido_normal, coord_foco
             if matriz[f][c]["tipo"] == matriz[f-1][c]["tipo"]:
                 contador += 1
             else:
-                # Si se corta la racha, chequeamos si llegamos a 3 o más
+                # Si se corta la racha, chequea si llega a 3 o más
                 if contador >= 3:
-                    # Agregamos todas las celdas de esa racha
+                    # Agrega todas las celdas de esa racha
                     for k in range(f-contador, f): celdas_match.add((k, c))
-                contador = 1 # Reiniciamos contador
+                contador = 1 # Reinicia contador
         
         # Chequeo final de columna
         if contador >= 3:
             for k in range(filas-contador, filas): celdas_match.add((k, c))
 
 
-    # --- 3. Procesamiento de Resultados ---
+    # Procesamiento de Resultados
     hay_match = False
     
-    # Si encontramos alguna celda para eliminar
+    # Si encuentra alguna celda para eliminar
     if len(celdas_match) > 0:
         hay_match = True
-        hubo_combo_grande = False # Bandera para saber si activar el sonido especial
+        hubo_combo_grande = False # Bandera para saber si se activa el sonido especial
         
-        # Paso A: Agrupar coordenadas por color para detectar combos grandes
-        grupos_por_color = {}
-        for coord in celdas_match:
-            f, c = coord
+        # Agrupa ubicaciones por color para detectar combos grandes
+        grupos_por_tipo = {}
+        for ubi in celdas_match:
+            f, c = ubi
             color = matriz[f][c]["tipo"]
             
-            if color not in grupos_por_color:
-                grupos_por_color[color] = []
-            grupos_por_color[color].append(coord)
+            if color not in grupos_por_tipo:
+                grupos_por_tipo[color] = []
+            grupos_por_tipo[color].append(ubi)
             
-        # Paso B: Revisar cada grupo de color
-        for color in grupos_por_color:
-            lista_coords = grupos_por_color[color]
+        # Revisa cada grupo de color
+        for color in grupos_por_tipo:
+            lista_coords = grupos_por_tipo[color]
             
             # Si un grupo tiene 5 o más celdas (COMBO ESPECIAL)
             if len(lista_coords) >= 5:
                 hubo_combo_grande = True 
                 
-                # Determinamos dónde nacerá el comodín
-                # Si hay un foco (click) y es parte del grupo, nace ahí. Si no, en la primera.
-                if coord_foco is not None and coord_foco in lista_coords:
-                    f_com, c_com = coord_foco
+                # Determina donde nace el comodín
+                # Si hay un click y es parte del grupo, nace ahi
+                if coord_click is not None and coord_click in lista_coords:
+                    f_com, c_com = coord_click
                 else:
                     f_com, c_com = lista_coords[0]
                 
-                # Activamos flag visual de comodín
+                # Activa bandera de comodin
                 matriz[f_com][c_com]["efecto_comodin"] = True
                 
-                # Reproducimos sonido especial
+                # Reproduce sonido especial
                 reproducir_sonido(sonido_comodin)
                 
-                # Cambiamos la imagen inmediatamente para feedback visual
+                # Cambia la imagen inmediatamente
                 try:
                     matriz[f_com][c_com]["img"] = pygame.image.load("assets/img/comodin.png")
                 except:
                     pass
                 
-                # PODER DEL COMODÍN: Agregamos fila y columna enteras para eliminar
+                # Por el poder del comodin, Agrega fila y columna enteras para eliminar
                 for x in range(cols): celdas_match.add((f_com, x))
                 for y in range(filas): celdas_match.add((y, c_com))
 
 
-        # Paso C: Sonido Normal (solo si no hubo combos grandes)
+        # Sonido normal (solo si no hubo combos grandes)
         if not hubo_combo_grande:
             reproducir_sonido(sonido_normal)
 
 
-        # Paso D: Marcar flag lógico 'eliminar' en todas las celdas finales
-        for coord in celdas_match:
-            f, c = coord
+        # Marcar bandera 'eliminar' en todas las celdas finales
+        for ubi in celdas_match:
+            f, c = ubi
             matriz[f][c]["eliminar"] = True
 
 
@@ -507,10 +484,7 @@ def marcar_matches(matriz: list[list], sonido_comodin, sonido_normal, coord_foco
 
 def eliminar_y_puntuar(matriz: list[list], elementos: dict, comodin_dict: dict) -> int:
     """
-    PROPOSITO:
-        Recorre la matriz ejecutando la eliminación de celdas marcadas.
-        Calcula el puntaje total sumando los valores de las fichas y bonus de comodín.
-        Deja las celdas eliminadas en estado 'vacio'.
+    PROPOSITO: Recorre la matriz ejecutando la eliminación de celdas marcadas y calcula el puntaje total.
 
     PARAMETROS:
         * matriz: El tablero de juego.
@@ -536,29 +510,26 @@ def eliminar_y_puntuar(matriz: list[list], elementos: dict, comodin_dict: dict) 
                 
             # Si la celda está marcada para eliminación
             if celda.get("eliminar") == True:
-                puntos_totales += celda["puntos"] # Sumamos puntos del caramelo
+                puntos_totales += celda["puntos"] # Sumamos puntos del elemento
                 
                 # Vaciamos la celda
                 celda["estado"] = "vacio"
                 celda["tipo"] = "vacio"
                 celda["img"] = None
-                celda["eliminar"] = False # Limpiamos flag
+                celda["eliminar"] = False # Limpiamos bandera
 
     return puntos_totales
 
 
 def rellenar_tablero(matriz: list[list], elementos: dict) -> None:
     """
-    PROPOSITO:
-        Escanea el tablero buscando huecos ('estado': 'vacio') y genera nuevos
-        elementos aleatorios para rellenarlos.
+    PROPOSITO: Determina si el tablero tiene huecos y los rellena con nuevos elementos aleatorios.
 
     PARAMETROS:
         * matriz: El tablero con huecos.
         * elementos: Diccionario de elementos disponibles para generar.
 
-    RETORNA:
-        * None (Modifica la matriz in-place).
+    RETORNA: None.
     """
     filas = len(matriz)
     cols = len(matriz[0])
@@ -576,7 +547,7 @@ def rellenar_tablero(matriz: list[list], elementos: dict) -> None:
                 # Recuperamos el rectángulo original para mantener posición
                 rect_original = matriz[f][c]["rect"]
                 
-                # Sobrescribimos la celda con el nuevo caramelo
+                # Sobrescribimos la celda con el nuevo elemento
                 matriz[f][c] = {
                     "tipo": elem_nuevo,
                     "puntos": datos_elem["puntos"],
@@ -586,9 +557,9 @@ def rellenar_tablero(matriz: list[list], elementos: dict) -> None:
                 }
 
 
-# -------------------------------------------------------------------------
-# SISTEMA DE ARCHIVOS Y UTILIDADES GRÁFICAS
-# -------------------------------------------------------------------------
+
+# SISTEMA DE ARCHIVOS Y VISUALES
+
 
 def cargar_lista_puntajes() -> list:
     """
@@ -623,9 +594,12 @@ def cargar_lista_puntajes() -> list:
 
 def escalar_fondo(ruta: str, tamanio: tuple) -> pygame.Surface:
     """
-    PROPOSITO:
-        Carga una imagen desde una ruta y la escala al tamaño especificado.
-        
+    PROPOSITO: Carga una imagen desde una ruta y la escala al tamaño especificado.
+    
+    PARAMETROS:
+        * ruta: Ruta del archivo de imagen.
+        * tamanio: Tupla con el tamaño deseado (ancho, alto).
+
     RETORNA:
         * pygame.Surface con la imagen escalada.
     """
@@ -634,9 +608,13 @@ def escalar_fondo(ruta: str, tamanio: tuple) -> pygame.Surface:
 
 def colocar_img_boton(ruta_img: str, ancho: int, alto: int) -> pygame.Surface:
     """
-    PROPOSITO:
-        Carga una imagen de botón y la escala a las dimensiones deseadas.
-        
+    PROPOSITO: Cargar y escalar imagen de botón.
+    
+    PARAMETROS:
+        * ruta_img: Ruta del archivo de imagen.
+        * ancho: Ancho deseado del botón.
+        * alto: Alto deseado del botón.
+    
     RETORNA:
         * pygame.Surface con la imagen del botón lista para usar.
     """

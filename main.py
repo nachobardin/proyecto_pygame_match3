@@ -12,22 +12,25 @@ indice_resolucion = 0
 pantalla = pygame.display.set_mode(RESOLUCIONES[indice_resolucion])  # Se crea la pantalla con la resolucion inicial
 ancho_base = RESOLUCIONES[indice_resolucion][0]
 ancho_actual = pantalla.get_width()
-factor = ancho_actual / ancho_base
+escala = ancho_actual / ancho_base # Ajusta proporcionalmente el tamanio para cuando se vambie la resolucion
 
 # Musica del juego
 musica_menu = pygame.mixer.music.load(SONIDO_MENU)
 sonido_vic = pygame.mixer.Sound(SONIDO_VICTORIA)
 sonido_comodin = pygame.mixer.Sound(SONIDO_COMODIN)
+musica_jugando = pygame.mixer.Sound(SONIDO_JUEGO)
+musica_juego = None
+
 
 pygame.mixer.music.set_volume(VOL_MUSICA)  # El volumen de la musica
 pygame.mixer.music.play(-1)    # Se reproduce la música en loop infinito.
 
 # Fuentes
-fuente_timer = pygame.font.SysFont("holly berry pop", int(80 * factor))                
-fuente_titulo = pygame.font.SysFont("holly berry pop", int(100 * factor), True, True)  
-fuente_puntaje = pygame.font.SysFont("holly berry pop", int(25 * factor))              
-fuente_input = pygame.font.SysFont("holly berry pop", int(60 * factor))     
-fuente_puntaje_registro = pygame.font.SysFont("holly berry pop", int(55 * factor))      
+fuente_timer = pygame.font.SysFont("holly berry pop", int(80 * escala))                
+fuente_titulo = pygame.font.SysFont("holly berry pop", int(100 * escala), True, True)  
+fuente_puntaje = pygame.font.SysFont("holly berry pop", int(25 * escala))              
+fuente_input = pygame.font.SysFont("holly berry pop", int(60 * escala))     
+fuente_puntaje_registro = pygame.font.SysFont("holly berry pop", int(55 * escala))      
 
 # Carga y escalado de fondos para que se ajusten a la pantalla actual
 tam_actual_pantalla = pantalla.get_size()  # Devuelve una tupla (ancho, alto)
@@ -170,7 +173,9 @@ while corriendo:
                 if tiempo_timer > 0:
                     tiempo_timer -= 1
                 else:   # Cuando el timer llega a 0
+                    musica_jugando.stop()
                     pygame.mixer.music.stop()   # Pongo en stop la musica de fond
+                    musica_jugando.stop
                     sonido_vic.set_volume(VOL_MUSICA)
                     reproducir_sonido(SONIDO_VICTORIA)
                     nombre_usuario = ""
@@ -187,6 +192,8 @@ while corriendo:
                         with open("puntajes.csv", "a") as archivo:
                             archivo.write(f"{nombre_usuario},{puntaje}\n")
                         lista_puntajes = cargar_lista_puntajes()
+                        musica_jugando.stop()
+                        pygame.mixer.music.stop()
                         pantalla_actual = "principal"
                         pygame.mixer.music.play(-1)
                 else:
@@ -201,6 +208,12 @@ while corriendo:
             if pantalla_actual == "principal":
                 if rect_boton_jugar.collidepoint(evento.pos):
                     reproducir_sonido(SONIDO_CLICK)
+
+                    # Musica del juego
+                    pygame.mixer.music.stop()            # Detiene musica de menu
+                    musica_jugando.set_volume(VOL_MUSICA)
+                    musica_juego = musica_jugando.play(-1) # Reproduce la musica de juego en loop
+
                     matriz = generar_tablero_valido_match_3(CANTIDAD_FILAS, CANTIDAD_COLUMNAS, elementos_tablero, rect_contenedor)
                     puntaje = 0
                     tiempo_timer = DURACION_TIMER
@@ -219,7 +232,7 @@ while corriendo:
                     # Recalcula el factor con la nueva resolucion
                     ancho_base = RESOLUCIONES[indice_resolucion][0]
                     ancho_actual = pantalla.get_width()
-                    factor = ancho_actual / ancho_base
+                    escala = ancho_actual / ancho_base
 
                     # Reescalado de fondos
                     tam_actual_pantalla = pantalla.get_size()  # Tupla (ancho, alto)
@@ -229,11 +242,11 @@ while corriendo:
                     FONDO_REGISTRO = escalar_fondo(RUTA_FONDO_REGISTRO, tam_actual_pantalla)
 
                     # Reescalado de fuentes 
-                    fuente_timer = pygame.font.SysFont("holly berry pop", int(80 * factor))
-                    fuente_titulo = pygame.font.SysFont("holly berry pop", int(100 * factor), True, True)
-                    fuente_puntaje = pygame.font.SysFont("holly berry pop", int(25 * factor))
-                    fuente_input = pygame.font.SysFont("holly berry pop", int(60 * factor))    
-                    fuente_puntaje_registro = pygame.font.SysFont("holly berry pop", int(45 * factor)) 
+                    fuente_timer = pygame.font.SysFont("holly berry pop", int(80 * escala))
+                    fuente_titulo = pygame.font.SysFont("holly berry pop", int(100 * escala), True, True)
+                    fuente_puntaje = pygame.font.SysFont("holly berry pop", int(25 * escala))
+                    fuente_input = pygame.font.SysFont("holly berry pop", int(60 * escala))    
+                    fuente_puntaje_registro = pygame.font.SysFont("holly berry pop", int(45 * escala)) 
 
                     # Reescalado de botones
                     ancho_boton = pantalla.get_width() * 0.20 
@@ -312,7 +325,12 @@ while corriendo:
                 if estado_juego == "jugando":
                     if rect_boton_volver.collidepoint(evento.pos):
                         reproducir_sonido(SONIDO_CLICK)
+                        musica_jugando.stop()
+                        pygame.mixer.music.load(SONIDO_MENU)
+                        pygame.mixer.music.play(-1)
+
                         pantalla_actual = "principal"
+
                     elif rect_boton_reiniciar.collidepoint(evento.pos):
                         reproducir_sonido(SONIDO_CLICK)
                         matriz = generar_tablero_valido_match_3(CANTIDAD_FILAS, CANTIDAD_COLUMNAS, elementos_tablero, rect_contenedor)
@@ -428,3 +446,5 @@ while corriendo:
         pantalla.blit(texto_puntaje_final, rect_puntaje_final)
 
     pygame.display.flip()
+
+pygame.quit
