@@ -12,15 +12,17 @@ indice_resolucion = 0
 pantalla = pygame.display.set_mode(RESOLUCIONES[indice_resolucion])  # Se crea la pantalla con la resolucion inicial
 
 # Musica del juego
-pygame.mixer.music.load(SONIDO_MENU)
+MUSICA_MENU = pygame.mixer.music.load(SONIDO_MENU)
+sonido_vic = pygame.mixer.Sound(SONIDO_VICTORIA)
 pygame.mixer.music.set_volume(VOL_MUSICA)  # Se define el volumen de la musica
 pygame.mixer.music.play(-1)    # Se reproduce la música en loop infinito.
 
 # Fuentes
 fuente_timer = pygame.font.SysFont("gabriola", 80)                # Fuente para timer.
 fuente_titulo = pygame.font.SysFont("arial", 100, True, True)  # Fuente grande para títulos.
-fuente_puntaje = pygame.font.SysFont("gabriola", 80)              # Fuente mediana para puntajes.
-fuente_input = pygame.font.SysFont("gabriola", 60)                # Fuente para input de nombre de usuario.
+fuente_puntaje = pygame.font.SysFont("gabriola", 25)              # Fuente mediana para puntajes.
+fuente_input = pygame.font.SysFont("gabriola", 60)     
+fuente_puntaje_registro = pygame.font.SysFont("gabriola", 60)      
 
 # Carga y escalado de fondos para que se ajusten a la pantalla actual
 tam_actual_pantalla = pantalla.get_size()  # Tupla (ancho, alto)
@@ -47,7 +49,7 @@ y_boton_reiniciar = y_boton_volver - alto_boton - int(pantalla.get_height()*0.02
 ancho_ranura = int(pantalla.get_width() * 0.35)
 alto_ranura = int(pantalla.get_height() * 0.05)
 x_ranura = (pantalla.get_width() - ancho_ranura) // 2
-margen_superior_ranura = int(pantalla.get_height() * 0.43)  # Justo debajo de "MEJORES PUNTAJES"
+margen_superior_ranura = int(pantalla.get_height() * 0.40)  # Justo debajo de "MEJORES PUNTAJES"
 margen_vertical_ranura = int(alto_ranura * 0.13)
 
 # Creacion de los rectángulos para cada botón
@@ -104,26 +106,32 @@ rect_contenedor = pygame.Rect(
 # Diccionario de elementos del tablero
 elementos_tablero = {
     "oreo": {
+        "tipo": "oreo",
         "img": "assets\img\oreobon.png",
         "puntos": 20
     },
     "bonobon": {
+        "tipo": "bonobon",
         "img": "assets/img/bon_o_bon.png",
         "puntos": 15
     },
     "chupetin": {
+        "tipo": "chupetin",
         "img": "assets\img\chupetin.png",
         "puntos": 10
     },
     "bubbaloo": {
+        "tipo": "bubbaloo",
         "img": "assets/img/bubbaloo.png",
         "puntos": 8
     },
     "flinpaf": {
+        "tipo": "flinpaf",
         "img": "assets/img/flinpaf.png",
         "puntos": 5
     },
     "mantecol": {
+        "tipo": "mantecol",
         "img": "assets\img\mantecol.png",
         "puntos": 12
     } 
@@ -131,6 +139,7 @@ elementos_tablero = {
 
 comodin_tablero = {
     "comodin": {
+        "tipo": "comodin",
         "img": "assets\img\comodin.png",
         "puntos": 50
     }
@@ -139,18 +148,110 @@ comodin_tablero = {
 # Lista de ranuras
 imagenes_ranura = [RANURA_1ERO, RANURA_2DO, RANURA_3ERO] + [RANURA_NORMAL]*7
 
+# Evento timer
+TIMER_EVENTO = pygame.USEREVENT + 1
+pygame.time.set_timer(TIMER_EVENTO, 1000)
+
 # Variables de estado del bucle
 pantalla_actual = "principal"
+nombre_usuario = ""
 corriendo = True
 
+# Variables de control y logica del juego
+celda_seleccionada = None
+estado_juego = "jugando" # Estados: "jugando", "esperando_borrar", "esperando_rellenar"
+tiempo_ultimo_cambio = 0
+TIEMPO_ESPERA = 800 # Delay de 800ms
+
+
 while corriendo:
+
+    # Tomamos el tiempo actual
+    tiempo_actual = pygame.time.get_ticks()
+
+# Logica de delay
+# Caso 1: Ya mostramos el match por 0.8 seg, ahora toca BORRAR
+    if estado_juego == "esperando_borrar":
+        if tiempo_actual - tiempo_ultimo_cambio > TIEMPO_ESPERA:
+            # 1. Ejecutamos la limpieza y sumamos puntos
+            # (Asegurate de tener importada eliminar_y_puntuar)
+            pts_extra = eliminar_y_puntuar(matriz, elementos_tablero, comodin_tablero)
+            puntaje += pts_extra
+            
+            # 2. Cambiar estado: Ahora mostramos los huecos vacíos
+            estado_juego = "esperando_rellenar"
+            tiempo_ultimo_cambio = tiempo_actual # Reiniciamos el reloj
+
+    # Caso 2: Ya mostramos los huecos por 0.8 seg, ahora toca RELLENAR
+    elif estado_juego == "esperando_rellenar":
+        if tiempo_actual - tiempo_ultimo_cambio > TIEMPO_ESPERA:
+            # 1. Rellenamos con nuevos caramelos
+            rellenar_tablero(matriz, elementos_tablero)
+            
+            # 2. ¿Se formaron nuevos combos al caer? (Reacción en cadena)
+            if marcar_matches(matriz):
+                # Sí -> Volvemos a esperar para borrar (bucle de animación)
+                estado_juego = "esperando_borrar"
+                tiempo_ultimo_cambio = tiempo_actual
+            else:
+                # No -> Todo quieto, devolvemos el control al jugador
+                estado_juego = "jugando"
+
     for evento in pygame.event.get():
         # Cierra la ventana si se da a la cruz
         if evento.type == pygame.QUIT:
             corriendo = False
 
+        # Manejo de evento del timer
+        elif evento.type == TIMER_EVENTO:
+            if pantalla_actual == "juego":
+                if tiempo_timer > 0:
+                    tiempo_timer -= 1
+                else:   # Cuando el timer llega a 0
+                    pygame.mixer.music.stop()   # Pongo en stop la musica de fond
+                    sonido_vic.set_volume(VOL_MUSICA)
+                    sonido_vic.play()
+                    
+                    nombre_usuario = ""
+                    pantalla_actual = "fin del juego"
+
+
+        elif evento.type == TIMER_EVENTO:
+            if pantalla_actual == "juego":
+                if tiempo_timer > 0:
+                    tiempo_timer -= 1
+                else:   # Cuando el timer llega a 0
+                    pygame.mixer.music.stop()
+                    sonido_vic.set_volume(VOL_MUSICA)
+                    sonido_vic.play()
+                    
+                    nombre_usuario = ""
+                    pantalla_actual = "fin del juego"
+
+        # 3. Manejo de TECLADO 
+        elif evento.type == pygame.KEYDOWN:
+            if pantalla_actual == "fin del juego":
+                if evento.key == pygame.K_BACKSPACE:
+                    nombre_usuario = nombre_usuario[:-1]  # Borrar último caracter
+                
+                elif evento.key == pygame.K_RETURN:
+                    # AL DAR ENTER: Guardar y Salir
+                    if len(nombre_usuario) > 0:
+                        # Guardar en CSV (append)
+                        with open("puntajes.csv", "a") as archivo:
+                            archivo.write(f"{nombre_usuario},{puntaje}\n")
+
+                        lista_puntajes = cargar_lista_puntajes()
+                        pantalla_actual = "principal"
+                        pygame.mixer.music.play(-1)
+                
+                else:
+                    # Si no es borrar ni enter, es una letra/número
+                    if len(nombre_usuario) < 12 and evento.unicode.isprintable():
+                        nombre_usuario += evento.unicode
+
         # Manejo de eventos por pantalla
-        if evento.type == pygame.MOUSEBUTTONDOWN:
+        elif evento.type == pygame.MOUSEBUTTONDOWN:
 
                 # Eventos menu principal
             if pantalla_actual == "principal":
@@ -206,7 +307,7 @@ while corriendo:
                     ancho_ranura = int(pantalla.get_width() * 0.35)
                     alto_ranura = int(pantalla.get_height() * 0.05)
                     x_ranura = (pantalla.get_width() - ancho_ranura) // 2
-                    margen_superior_ranura = int(pantalla.get_height() * 0.43)  # Justo debajo de "MEJORES PUNTAJES"
+                    margen_superior_ranura = int(pantalla.get_height() * 0.40)  # Justo debajo de "MEJORES PUNTAJES"
                     margen_vertical_ranura = int(alto_ranura * 0.13)
 
                     # Reescalado de imagenes
@@ -247,19 +348,62 @@ while corriendo:
                 elif rect_boton_salir.collidepoint(evento.pos):
                     corriendo = False
 
-                # Eventos puntajes
+                # Eventos click puntajes
             elif pantalla_actual == "puntajes":
                 if rect_boton_volver.collidepoint(evento.pos):
                     pantalla_actual = "principal"
 
-                # Eventos juego
+                # Eventos click juego
             elif pantalla_actual == "juego":
-                if rect_boton_volver.collidepoint(evento.pos):
-                    pantalla_actual = "principal"
-                elif rect_boton_reiniciar.collidepoint(evento.pos):
-                    matriz = generar_tablero_valido_match_3(CANTIDAD_FILAS, CANTIDAD_COLUMNAS, elementos_tablero, rect_contenedor)
-                    puntaje = 0
-                    tiempo_timer = DURACION_TIMER
+
+                # Solo deja clickear mientras no hay animacion
+                if estado_juego == "jugando":
+                    if rect_boton_volver.collidepoint(evento.pos):
+                        pantalla_actual = "principal"
+                    elif rect_boton_reiniciar.collidepoint(evento.pos):
+                        matriz = generar_tablero_valido_match_3(CANTIDAD_FILAS, CANTIDAD_COLUMNAS, elementos_tablero, rect_contenedor)
+                        puntaje = 0
+                        tiempo_timer = DURACION_TIMER
+                        celda_seleccionada = None
+                        estado_juego = "jugando"
+
+                    else:
+                        # Logica de seleccion y swappeo
+
+                        # Detecta la celda que se clickeo
+                        ubicacion_click = obtener_coordenada_click(matriz, evento.pos)
+
+                        if ubicacion_click != None:
+                            # CASO A: Primer click
+                            if celda_seleccionada is None:
+                                celda_seleccionada = ubicacion_click
+                            else:
+                                # ¿Son vecinos? (Están pegados horizontal o verticalmente)
+                                if son_vecinos(celda_seleccionada, ubicacion_click):
+                                    
+                                    # 1. Hacemos el intercambio (SWAP)
+                                    intercambiar(matriz, celda_seleccionada, ubicacion_click)
+                                    
+                                    # 2. Chequeamos si el movimiento creó un Match
+                                    if marcar_matches(matriz):
+                                        # ¡HUBO MATCH! 
+                                        # Iniciamos la secuencia de animación automática
+                                        estado_juego = "esperando_borrar"
+                                        tiempo_ultimo_cambio = pygame.time.get_ticks()
+                                        # print("Match encontrado. Iniciando animación...")
+                                    else:
+                                        # NO HUBO MATCH -> Movimiento inválido
+                                        # Revertimos el cambio inmediatamente
+                                        intercambiar(matriz, celda_seleccionada, ubicacion_click)
+                                        # print("Movimiento inválido. Revertido.")
+                                    
+                                    # Sea válido o no, terminamos la selección (reseteamos)
+                                    celda_seleccionada = None
+                                
+                                else:
+                                    # Si clickeó una celda lejos (no vecina), cambiamos el foco a la nueva
+                                    # Es como decir "me arrepentí, quiero mover esta otra"
+                                    celda_seleccionada = ubicacion_click
 
         # Render pantalla principal
     if pantalla_actual == "principal":
@@ -277,7 +421,7 @@ while corriendo:
           # Render del fondo
           pantalla.blit(FONDO_PUNTAJES, (0, 0))
 
-# ------- RECORRE TODAS LAS RANURAS QUE HAY EN LA LISTA --------
+          # RECORRE TODAS LAS RANURAS QUE HAY EN LA LISTA
           for i in range(len(imagenes_ranura)):
             # Calcula la posición vertical YY (uno debajo del otro, con margen)
             y_ranura = margen_superior_ranura + i * (alto_ranura + margen_vertical_ranura)
@@ -288,14 +432,18 @@ while corriendo:
             pantalla.blit(imagen_ranura_escalada, rect_ranura)
 
               # Si tenés datos para ese puesto (nombre y puntaje), dibujalos dentro de la ranura
-            # if i < len(lista_puntajes):
-            #      nombre, puntaje = lista_puntajes[i]  # Por ejemplo: ("Nacho", 330)
-            #      texto_nombre = fuente_puntaje.render(nombre, True, (65,35,30))
-            #      texto_puntaje = fuente_puntaje.render(str(puntaje), True, (65,35,30))
-            #      # Nombre alineado a la izquierda
-            #      pantalla.blit(texto_nombre, (x_ranura + 30, y_ranura + alto_ranura//3))
-            #      # Puntaje alineado a la derecha
-            #      pantalla.blit(texto_puntaje, (x_ranura + ancho_ranura - 80, y_ranura + alto_ranura//3))
+            if i < len(lista_puntajes):
+                nombre, puntaje = lista_puntajes[i]  # Por ejemplo: ("Nacho", 330)
+
+                ajuste_altura = int(alto_ranura * 0.22)
+                pos_y_texto = y_ranura + ajuste_altura
+
+                texto_nombre = fuente_puntaje.render(nombre, True, (NEGRO))
+                texto_puntaje = fuente_puntaje.render(str(puntaje), True, (NEGRO))
+                # Nombre alineado a la izquierda
+                pantalla.blit(texto_nombre, (x_ranura + 30, pos_y_texto))
+                # Puntaje alineado a la derecha
+                pantalla.blit(texto_puntaje, (x_ranura + ancho_ranura - 80, pos_y_texto))
 
 
           # Render botones
@@ -313,7 +461,7 @@ while corriendo:
 
         # Contenedor puntaje
         pantalla.blit(img_cont_puntaje, rect_img_cont_puntaje)
-        texto_puntaje = fuente_puntaje.render(str(puntaje), True, (65,35,30))
+        texto_puntaje = fuente_puntaje_registro.render(str(puntaje), True, (65,35,30))
         rect_puntaje_display = texto_puntaje.get_rect(center=rect_img_cont_puntaje.center)
         pantalla.blit(texto_puntaje, rect_puntaje_display)
 
@@ -328,6 +476,44 @@ while corriendo:
         FONDO_TABLERO = escalar_fondo(RUTA_FONDO_TABLERO, (rect_contenedor.width, rect_contenedor.height))
         pantalla.blit(FONDO_TABLERO, rect_contenedor.topleft)
         dibujar_matriz(matriz, pantalla)
+
+    elif pantalla_actual == "fin del juego":
+        pantalla.blit(FONDO_REGISTRO, (0, 0))
+
+        # NOMBRE (En la ranura del medio)
+        centro_ranura_y = int(pantalla.get_height() * 0.38)
+        COLOR_TEXTO_NOMBRE = (101, 67, 33)
+
+        texto_nombre = fuente_input.render(nombre_usuario, True, NEGRO)
+        rect_nombre = texto_nombre.get_rect(center=(pantalla.get_width() // 2, centro_ranura_y))
+        pantalla.blit(texto_nombre, rect_nombre)
+
+
+        # PUNTAJE debajo de la ranura
+
+        # Titulo puntaje en el contendor
+        centro_puntaje_y = int(pantalla.get_height() * 0.58)
+        ancho_cont_puntaje = pantalla.get_width() * 0.25
+        alto_cont_puntaje = pantalla.get_height() * 0.22
+
+        img_puntaje_grande = colocar_img_boton(RUTA_CONT_PUNTAJE, pantalla.get_width() * 0.30, pantalla.get_height() * 0.25)
+
+        rect_img_puntaje = img_puntaje_grande.get_rect(center=(pantalla.get_width() // 2, centro_puntaje_y))
+        pantalla.blit(img_puntaje_grande, rect_img_puntaje)
+
+        texto_titulo_puntaje = fuente_puntaje_registro.render(f"Puntaje", True, BLANCO)
+
+        rect_titulo_puntaje = texto_titulo_puntaje.get_rect(center=rect_img_puntaje.center)
+        rect_titulo_puntaje.y -= (alto_cont_puntaje * 0.15)
+
+        pantalla.blit(texto_titulo_puntaje, rect_titulo_puntaje) 
+
+        # Puntos en el contenedor
+        texto_puntaje = fuente_puntaje_registro.render(str(puntaje), True, BLANCO)
+
+        rect_puntaje = texto_puntaje.get_rect(center=rect_img_puntaje.center)
+        rect_puntaje.y += int(alto_cont_puntaje * 0.15)  # Bajamos el número
+        pantalla.blit(texto_puntaje, rect_puntaje)
 
     pygame.display.flip()
 

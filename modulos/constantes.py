@@ -11,7 +11,7 @@ GRIS = (128, 128, 128)
 AMARILLO = (255, 255, 0)
 CELESTE = ( 0, 0,128)
 AZUL = ( 0, 0, 255)
-
+NEGRO = (0, 0, 0)
 
 # Resoluciones
 RESOLUCIONES = [(1440, 900), (1280, 720), (1000, 600)]
@@ -76,7 +76,7 @@ FONDO_RESOLUCION = pygame.transform.scale(FONDO_RESOLUCION, RESOLUCIONES[0])
 
 IMG_TIMER = pygame.image.load(RUTA_TIMER_BTN)
 IMG_TIMER_ESCALADA = pygame.transform.scale(IMG_TIMER, (150, 90))
-DURACION_TIMER = 60
+DURACION_TIMER = 20
 
 RUTA_RANURA_1ERO = "assets/img/ranura1eroREC.png"
 RUTA_RANURA_2DO =  "assets/img/ranura2doREC.png"
