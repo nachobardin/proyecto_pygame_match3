@@ -592,6 +592,12 @@ def cargar_lista_puntajes() -> list:
     return lista[:10]
 
 
+
+mi_diccionario = {
+    "nombre": "Ignacio",
+    "apellido": "Bardin"
+}
+
 def escalar_fondo(ruta: str, tamanio: tuple) -> pygame.Surface:
     """
     PROPOSITO: Carga una imagen desde una ruta y la escala al tamaño especificado.
